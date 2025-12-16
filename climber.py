@@ -1,31 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-
-url = 'https://www.gequbao.com/s/all%20for%20love'
-headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
-
-response = requests.get(url,verify = False,headers = headers)
-
-soup = BeautifulSoup(response.text,'html.parser')
-
-music_list = soup.find(class_='card-text').find_all('div', class_='row') #找到所有歌曲的div标签
-music_list = music_list[1:] #第一个元素不包含歌曲，切掉
-
-# 二次处理，得到歌曲的url列表
-url_list = []
-for n in range(len(music_list)):
-    url_list.append('https://www.gequbao.com/' + str(music_list[n])[str(music_list[n]).find('href') + 6:].split('"')[0])
-
-print(url_list)
-
-response2 = requests.get(url_list[2],verify = False,headers = headers)
-soup2 = BeautifulSoup(response2.text,'html.parser')
-print(soup2)
-
-
-
-# 处理动态网页
 import os
+import time
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.by import By
@@ -34,43 +10,66 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.edge.options import Options
 
-edge_options = Options()
-edge_options.add_argument("--headless")
+headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
+verify = False #  关闭证书验证，解决Win10的SSL过期问题
 
-driver = webdriver.Edge(service=Service(os.path.join(os.path.dirname(os.path.abspath(__file__)),'drivers','msedgedriver.exe')))
-driver.get('https://www.gequbao.com/music/34427')
+def get_music_url_list(name):
+    # 替换歌曲名中的空格为%20
+    if ' ' in name:
+        name = name.replace(' ','%20')
+    url = 'https://www.gequbao.com/s/' + name
 
-def click_button(driver, type, value):# 自动点击按钮
-    try:
-        #根据type和value确定元素定位器
-        if type.lower() == 'id':
+    response = requests.get(url,verify = verify,headers = headers)
+    soup = BeautifulSoup(response.text,'html.parser')
+
+    music_list = soup.find(class_='card-text').find_all('div', class_='row')  # 找到所有歌曲的div标签
+    music_list = music_list[1:]  # 第一个元素不包含歌曲，切掉
+
+    # 二次处理，得到歌曲的url列表
+    url_list = []
+    for n in range(len(music_list)):
+        url_list.append('https://www.gequbao.com/' + str(music_list[n])[str(music_list[n]).find('href') + 6:].split('"')[0])
+
+    return url_list
+
+def get_music_download_url(url):
+    #  设置无头模式和User-Agent
+    edge_options = Options()
+    edge_options.add_argument("--headless")
+    edge_options.add_argument(f"user-agent={headers['User-Agent']}")
+
+    # 启动浏览器并发送请求
+    driver = webdriver.Edge(service=Service(os.path.join(os.path.dirname(os.path.abspath(__file__)),'drivers','msedgedriver.exe')),options=edge_options)
+    driver.get(url)
+    print('get')
+    time.sleep(1.25)
+
+    # 点击按钮
+    def click_button(driver, value):# 自动点击按钮
+        try:
+            #根据value确定元素定位器
             element_locator = (By.ID, value)
-        elif type.lower() == 'class_name':
-            element_locator = (By.CLASS_NAME, value)
-        elif type.lower() == 'xpath':
-            element_locator = (By.XPATH, value)
-        else:
-            raise ValueError("Unsupported element locator type. Use 'id', 'class_name' or 'xpath'.")
-        # 等待元素可点击
-        WebDriverWait(driver, 5).until(EC.element_to_be_clickable(element_locator))
-        # 查找并点击元素
-        element = driver.find_element(*element_locator)#解包元素定位器并查找元素
-        ActionChains(driver).click(element).perform()#执行点击操作
-    except Exception as e:
-        print('异常:', '\n',e)
+            # 等待元素可点击
+            WebDriverWait(driver, 5).until(EC.element_to_be_clickable(element_locator))
+            # 查找并点击元素
+            element = driver.find_element(*element_locator)#解包元素定位器并查找元素
+            ActionChains(driver).click(element).perform()#执行点击操作
+        except Exception as e:
+            print('异常:', '\n',e)
+    click_button(driver,'btn-download-mp3')
+    print('click')
 
-click_button(driver,'id','btn-download-mp3')
-import time
-time.sleep(20)# 问题在这里，href不加载，空的
-page_html = driver.page_source
+    # 获得HTML并解析
+    page_html = driver.page_source
+    soup = BeautifulSoup(page_html,'html.parser')
+
+    print(soup)
+    time.sleep(2)
+
+    return soup.find(class_='default-link').get('href')
 
 
-# 测试用
-with open('return_text.txt','w',encoding='utf-8') as f:
-    for url in url_list:
-        f.write(url+'\n')
-    f.write(str(page_html))
-
+get_music_download_url('https://www.gequbao.com//music/34427')
 
 
 
