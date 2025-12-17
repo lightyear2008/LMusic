@@ -39,60 +39,50 @@ def get_music_download_url(url):
     edge_options.add_argument(f"user-agent={headers['User-Agent']}")
 
     # 启动浏览器并发送请求
-    driver = webdriver.Edge(service=Service(os.path.join(os.path.dirname(os.path.abspath(__file__)),'drivers','msedgedriver.exe')),options=edge_options)
+    driver = webdriver.Edge(
+            service=Service(os.path.join(os.path.dirname(os.path.abspath(__file__)),'drivers','msedgedriver.exe')),
+            options=edge_options
+            )
     driver.get(url)
     print('get')
-    time.sleep(1.25)
+
+    # 等待按钮可点击
+    WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.ID,'btn-download-mp3')))
+    time.sleep(2) #  不加href就是空的
+    print('sleeped')
 
     # 点击按钮
-    def click_button(driver, value):# 自动点击按钮
-        try:
-            #根据value确定元素定位器
-            element_locator = (By.ID, value)
-            # 等待元素可点击
-            WebDriverWait(driver, 5).until(EC.element_to_be_clickable(element_locator))
-            # 查找并点击元素
-            element = driver.find_element(*element_locator)#解包元素定位器并查找元素
-            ActionChains(driver).click(element).perform()#执行点击操作
-        except Exception as e:
-            print('异常:', '\n',e)
-    click_button(driver,'btn-download-mp3')
+    driver.find_element(By.ID,'btn-download-mp3').click()
     print('click')
 
     # 获得HTML并解析
     page_html = driver.page_source
     soup = BeautifulSoup(page_html,'html.parser')
 
-    print(soup)
-    time.sleep(2)
+    # 确保返回值不为空
+    for n in range(3):
+        if soup.find(class_='default-link').get('href') == '':
+            print('retry')
+            driver.get(url)
+            time.sleep(3)
+            page_html = driver.page_source
+            soup = BeautifulSoup(page_html, 'html.parser')
+    if soup.find(class_='default-link').get('href') == '':
+        return 'url获取失败'
 
     return soup.find(class_='default-link').get('href')
 
+def download_music(download_url,file_path):
+    # 发送 GET 请求下载 MP3 文件
+    response = requests.get(download_url, stream=True, verify=verify)
 
-get_music_download_url('https://www.gequbao.com//music/34427')
-
-
-
-
-'''
-#试一下怎么下载   OK成功了,现在只需要找到URL
-#AI给的逐块下载
-import requests
-
-# MP3 文件的 URL
-mp3_url = 'https://lx-sycdn.kuwo.cn/446af18fd4e9a826585d6630827f5546/693ce904/resource/n3/28/25/3173429631.mp3?bitrate$128&from=vip'
-
-# 发送 HTTP GET 请求下载 MP3 文件
-response = requests.get(mp3_url, stream=True, verify=False)
-
-# 检查请求是否成功
-if response.status_code == 200:
-    # 打开文件以二进制写入模式保存 MP3 文件
-    with open('All For Love (LÜ Remix)-TUNGEVAAG&Raaban.mp3', 'wb') as file:
-        # 写入下载的文件内容
-        for chunk in response.iter_content(chunk_size=8192):
-            file.write(chunk)
-    print("MP3 文件下载成功并保存为 All For Love (LÜ Remix)-TUNGEVAAG&Raaban.mp3")
-else:
-    print("无法下载 MP3 文件，状态码：", response.status_code)
-'''
+    # 检查请求是否成功
+    if response.status_code == 200:
+        # 打开文件以二进制写入模式保存 MP3 文件
+        with open(file_path + '.mp3', 'wb') as file:
+            # 写入下载的文件内容
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+        print("MP3 文件下载成功")
+    else:
+        print("无法下载 MP3 文件，状态码：", response.status_code)
