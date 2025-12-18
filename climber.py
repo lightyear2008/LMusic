@@ -5,7 +5,6 @@ import time
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.edge.options import Options
@@ -28,7 +27,7 @@ def get_music_url_list(name):
     # 二次处理，得到歌曲的url列表
     url_list = []
     for n in range(len(music_list)):
-        url_list.append('https://www.gequbao.com/' + str(music_list[n])[str(music_list[n]).find('href') + 6:].split('"')[0])
+        url_list.append('https://www.gequbao.com' + str(music_list[n])[str(music_list[n]).find('href') + 6:].split('"')[0])
 
     return url_list
 
@@ -47,7 +46,7 @@ def get_music_download_url(url):
     print('get')
 
     # 等待按钮可点击
-    WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.ID,'btn-download-mp3')))
+    WebDriverWait(driver,20).until(EC.element_to_be_clickable((By.ID,'btn-download-mp3')))
     time.sleep(2) #  不加href就是空的
     print('sleeped')
 
