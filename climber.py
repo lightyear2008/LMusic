@@ -27,8 +27,19 @@ def get_music_url_list(name):
     # 二次处理，得到歌曲的url列表
     url_list = []
     for n in range(len(music_list)):
-        url_list.append('https://www.gequbao.com' + str(music_list[n])[str(music_list[n]).find('href') + 6:].split('"')[0])
-
+        inside_list = []
+        # 获取URL
+        inside_list.append('https://www.gequbao.com' + str(music_list[n])[str(music_list[n]).find('href') + 6:].split('"')[0])
+        # 获取歌名
+        inside_list.append(music_list[n].find(class_='col-8 col-content').find_all('span')[1].get_text())
+        # 处理作者名(删除换行符和作者名前后的空格)
+        author = music_list[n].find('small').get_text().replace('\n','')
+        while author[0] == ' ':
+            author = author[1:]
+        while author[-1] == ' ':
+            author = author[:-1]
+        inside_list.append(author)
+        url_list.append(inside_list)
     return url_list
 
 def get_music_download_url(url):
