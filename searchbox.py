@@ -1,10 +1,12 @@
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout,
-                             QLineEdit, QPushButton, QHBoxLayout, QWidget)
+                             QLineEdit, QPushButton, QHBoxLayout, QWidget,
+                             QLabel)
 from PyQt5.QtGui import QPalette, QColor
 import sys
 from climber import *
 
 COLOR_MODE = 'DARK'
+ORIGIN_SEARCH_PURPOSE = 'Run Free'
 
 class SearchBox(QMainWindow):
     def __init__(self):
@@ -12,12 +14,14 @@ class SearchBox(QMainWindow):
         self.initUI()
         self.init_layout()
         self.init_CSS()
-
+        self.show()
+        self.show_condition()
 
     def initUI(self):
-        # 设置窗口标题和大小
+        # 设置窗口标题和大小和最小大小
         self.setWindowTitle('搜索歌曲')
         self.setGeometry(0, 0, 1000, 1400)
+        self.setMinimumSize(1000, 1400)
         # 设置主窗口背景色
         palette = QPalette()
         if COLOR_MODE == 'LIGHT':
@@ -32,27 +36,73 @@ class SearchBox(QMainWindow):
 
         # 输入框
         self.inputbox = QLineEdit(self)
-        self.inputbox.setFixedSize(800,80)
+        self.inputbox.setFixedSize(780,80)
+        self.inputbox.setPlaceholderText('输入歌曲名...')
+        self.inputbox.setText(ORIGIN_SEARCH_PURPOSE)
 
         # 搜索按钮
-        self.search_button = QPushButton(self)
-        self.search_button.setFixedSize(200,80)
+        self.search_button = QPushButton('搜索',self)
+        self.search_button.setFixedSize(180,80)
+        self.search_button.clicked.connect(self.show_condition)
 
+        # 状态栏
+        self.condition_label = QLabel('',self)
+        self.condition_label.setFixedSize(1000,80)
 
     def init_layout(self):
-        self.main_layout = QVBoxLayout()
+        self.top_layout = QVBoxLayout()
 
         search_layout = QHBoxLayout()
         search_layout.addWidget(self.inputbox)
         search_layout.addWidget(self.search_button)
-        self.main_layout.addLayout(search_layout)
+        self.top_layout.addLayout(search_layout)
+
+        condition_layout = QVBoxLayout()
+        condition_layout.addWidget(self.condition_label)
+        self.top_layout.addLayout(condition_layout)
 
         container = QWidget()  # 创建容器
-        container.setLayout(self.main_layout)  # 把主布局添加到容器中
-        self.setCentralWidget(container)  # 设置窗口的中心部件为容器
+        container.setLayout(self.top_layout)
+        self.top_layout.setContentsMargins(0, 20, 0, 0) # 取消边距
+        self.setMenuWidget(container)
 
     def init_CSS(self):
-        self.inputbox.setStyleSheet('')
+        self.inputbox.setStyleSheet('''
+                    QLineEdit {
+                        background-color: rgb(43,45,48); 
+                        border: 2px solid #ECF0F1; 
+                        border-radius: 15px; 
+                        font-size: 40px;
+                        font-weight: bold;
+                        color: white;
+                    }
+                    QLineEdit:focus {
+                        border: 5px outset #3498DB;
+                    }
+                    ''')
+        self.search_button.setStyleSheet('''
+                    QPushButton {
+                        background-color: #3574F0;
+                        border: none;
+                        border-radius: 15px;
+                        font-weight: bold;
+                        color: white;  
+                    }
+                    QPushButton:pressed {
+                        background-color: #4584FF;
+                        border: 5px inset #4584FF;
+                    }
+                    ''')
+        self.condition_label.setStyleSheet('''
+                    QLabel {
+                        background-color: rgb(35,37,39);
+                        color: white;
+                    }
+                    ''')
+
+    def show_condition(self):
+        self.musiclist = get_music_url_list(ORIGIN_SEARCH_PURPOSE)
+        self.condition_label.setText(f'已找到 {len(self.musiclist)} 条内容')
 
     def run_climber(self):
         pass
