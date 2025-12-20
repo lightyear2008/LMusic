@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout,
                              QLineEdit, QPushButton, QHBoxLayout, QWidget,
-                             QLabel)
+                             QLabel, QListWidget, QListWidgetItem)
 from PyQt5.QtGui import QPalette, QColor
 import sys
 from climber import *
@@ -11,6 +11,10 @@ ORIGIN_SEARCH_PURPOSE = 'Run Free'
 class SearchBox(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.input_text = ORIGIN_SEARCH_PURPOSE
+        self.button_list = []
+
         self.initUI()
         self.init_layout()
         self.init_CSS()
@@ -18,6 +22,7 @@ class SearchBox(QMainWindow):
         self.show_condition()
 
     def initUI(self):
+        print('initUI')
         # 设置窗口标题和大小和最小大小
         self.setWindowTitle('搜索歌曲')
         self.setGeometry(0, 0, 1000, 1400)
@@ -38,7 +43,7 @@ class SearchBox(QMainWindow):
         self.inputbox = QLineEdit(self)
         self.inputbox.setFixedSize(780,80)
         self.inputbox.setPlaceholderText('输入歌曲名...')
-        self.inputbox.setText(ORIGIN_SEARCH_PURPOSE)
+        self.inputbox.setText(self.input_text)
 
         # 搜索按钮
         self.search_button = QPushButton('搜索',self)
@@ -49,7 +54,11 @@ class SearchBox(QMainWindow):
         self.condition_label = QLabel('',self)
         self.condition_label.setFixedSize(1000,80)
 
+        # 主列表
+        self.main_list = QListWidget(self)
+
     def init_layout(self):
+        print('init_layout')
         self.top_layout = QVBoxLayout()
 
         search_layout = QHBoxLayout()
@@ -66,7 +75,10 @@ class SearchBox(QMainWindow):
         self.top_layout.setContentsMargins(0, 20, 0, 0) # 取消边距
         self.setMenuWidget(container)
 
+        self.setCentralWidget(self.main_list)
+
     def init_CSS(self):
+        print('init_CSS')
         self.inputbox.setStyleSheet('''
                     QLineEdit {
                         background-color: rgb(43,45,48); 
@@ -101,7 +113,18 @@ class SearchBox(QMainWindow):
                     ''')
 
     def show_condition(self):
-        self.musiclist = get_music_url_list(ORIGIN_SEARCH_PURPOSE)
+        print('show_condition')
+        self.musiclist = get_music_url_list(self.inputbox.text())
+
+
+        for n in range(len(self.musiclist)):
+            item = QListWidgetItem(self.main_list)  # 创建一个QListWidgetItem
+            button = QPushButton(f'Button {n}', self)  # 创建一个QPushButton
+            button.setText(self.musiclist[n][1])
+            self.button_list.append(button)
+
+
+        print(self.musiclist)
         self.condition_label.setText(f'已找到 {len(self.musiclist)} 条内容')
 
     def run_climber(self):
