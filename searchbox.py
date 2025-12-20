@@ -111,17 +111,20 @@ class SearchBox(QMainWindow):
                         color: white;
                     }
                     ''')
+        self.setStyleSheet('''
+                    QListWidget {
+                        background-color: rgb(15,17,19)
+                        color: white;
+                    }
+                    ''')
 
-    def show_condition(self):
+    def show_condition(self):# 查找歌曲
         print('show_condition')
         self.musiclist = get_music_url_list(self.inputbox.text())
 
-
+        self.main_list.clear()
         for n in range(len(self.musiclist)):
-            item = QListWidgetItem(self.main_list)  # 创建一个QListWidgetItem
-            button = QPushButton(f'Button {n}', self)  # 创建一个QPushButton
-            button.setText(self.musiclist[n][1])
-            self.button_list.append(button)
+            item = QListWidgetItem(self.musiclist[n][1],self.main_list)
 
 
         print(self.musiclist)
