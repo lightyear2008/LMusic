@@ -111,7 +111,7 @@ class SearchBox(QMainWindow):
                         color: white;
                     }
                     ''')
-        self.setStyleSheet('''
+        self.main_list.setStyleSheet('''
                     QListWidget {
                         background-color: rgb(15,17,19)
                         color: white;
@@ -124,8 +124,9 @@ class SearchBox(QMainWindow):
 
         self.main_list.clear()
         for n in range(len(self.musiclist)):
-            item = QListWidgetItem(self.musiclist[n][1],self.main_list)
-
+            text = self.musiclist[n][1] + '\n               ——' + self.musiclist[n][2]
+            item = QListWidgetItem(text,self.main_list)
+            
 
         print(self.musiclist)
         self.condition_label.setText(f'已找到 {len(self.musiclist)} 条内容')
