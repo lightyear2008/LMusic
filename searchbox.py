@@ -63,7 +63,7 @@ class SearchBox(QMainWindow):
 
         # 下载按钮
         self.download_button = QPushButton('下载',self)
-        self.search_button.clicked.connect(self.download_mp3)
+        self.download_button.clicked.connect(self.download_mp3)
 
     def init_layout(self):
         print('init_layout')
@@ -102,7 +102,7 @@ class SearchBox(QMainWindow):
         # 安置center_layout布局(Central)
         container2 = QWidget()
         container2.setLayout(self.center_layout)
-        self.center_layout.setContentsMargins(0,0,0,0)
+        self.center_layout.setContentsMargins(2,0,2,5)
         self.setCentralWidget(container2)
 
     def init_CSS(self):
@@ -154,6 +154,26 @@ class SearchBox(QMainWindow):
                         border-radius: 10px;
                         color: white;
                     }
+                    QPushButton:hover {
+                        background-color: #1e1f22;
+                    }
+                    QPushButton:pressed {
+                        border: 2px solid #3574F0;
+                    }
+                    ''')
+        self.download_button.setStyleSheet('''
+                     QPushButton {
+                        min-width: 300px;
+                        min-height: 80px;
+                        background-color: #3574F0;
+                        border: none;
+                        border-radius: 10px;
+                        color: white;
+                    }
+                    QPushButton:pressed {
+                        background-color: #4584FF;
+                        border: 3px inset #4584FF;
+                    }
                     ''')
 
     def search(self):# 查找歌曲
@@ -173,6 +193,7 @@ class SearchBox(QMainWindow):
         self.condition_label.setText(f'已找到 {len(self.musiclist)} 条内容')
 
     def download_mp3(self):
+        print('download')
         if self.main_list.currentItem() == None:
             print('请选择要下载的歌曲')
         else:
