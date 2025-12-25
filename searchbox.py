@@ -19,7 +19,7 @@ class SearchBox(QMainWindow):
         self.init_layout()
         self.init_CSS()
         self.show()
-        self.show_condition()
+        self.search()
 
     def initUI(self):
         print('initUI')
@@ -48,7 +48,7 @@ class SearchBox(QMainWindow):
         # 搜索按钮
         self.search_button = QPushButton('搜索',self)
         self.search_button.setFixedSize(180,80)
-        self.search_button.clicked.connect(self.show_condition)
+        self.search_button.clicked.connect(self.search)
 
         # 状态栏
         self.condition_label = QLabel('',self)
@@ -57,25 +57,53 @@ class SearchBox(QMainWindow):
         # 主列表
         self.main_list = QListWidget(self)
 
+        # 试听按钮
+        self.try_button = QPushButton('试听',self)
+        #self.try_button.clicked.connect()
+
+        # 下载按钮
+        self.download_button = QPushButton('下载',self)
+        self.search_button.clicked.connect(self.download_mp3)
+
     def init_layout(self):
         print('init_layout')
+        # top_layout包含搜索栏、按钮和状态栏
         self.top_layout = QVBoxLayout()
 
+        # 搜索栏和搜索按钮
         search_layout = QHBoxLayout()
         search_layout.addWidget(self.inputbox)
         search_layout.addWidget(self.search_button)
         self.top_layout.addLayout(search_layout)
 
+        # 状态栏
         condition_layout = QVBoxLayout()
         condition_layout.addWidget(self.condition_label)
         self.top_layout.addLayout(condition_layout)
 
-        container = QWidget()  # 创建容器
+        # center_layout包括主列表、试听和下载按钮
+        self.center_layout = QVBoxLayout()
+
+        # 主列表
+        self.center_layout.addWidget(self.main_list)
+
+        # 试听和下载按钮
+        bottom_layout = QHBoxLayout()
+        bottom_layout.addWidget(self.try_button,stretch=1)
+        bottom_layout.addWidget(self.download_button,stretch=1)
+        self.center_layout.addLayout(bottom_layout)
+
+        # 安置top_layout布局(Menu)
+        container = QWidget()
         container.setLayout(self.top_layout)
         self.top_layout.setContentsMargins(0, 20, 0, 0) # 取消边距
         self.setMenuWidget(container)
 
-        self.setCentralWidget(self.main_list)
+        # 安置center_layout布局(Central)
+        container2 = QWidget()
+        container2.setLayout(self.center_layout)
+        self.center_layout.setContentsMargins(0,0,0,0)
+        self.setCentralWidget(container2)
 
     def init_CSS(self):
         print('init_CSS')
@@ -113,26 +141,43 @@ class SearchBox(QMainWindow):
                     ''')
         self.main_list.setStyleSheet('''
                     QListWidget {
-                        background-color: rgb(15,17,19)
+                        background-color: rgb(15,17,19);
+                        color: white;
+                    }
+                    ''')
+        self.try_button.setStyleSheet('''
+                    QPushButton {
+                        min-width: 300px;
+                        min-height: 80px;
+                        background-color: rgb(43,45,48);
+                        border: 2px solid #FFFFFF;
+                        border-radius: 10px;
                         color: white;
                     }
                     ''')
 
-    def show_condition(self):# 查找歌曲
-        print('show_condition')
+    def search(self):# 查找歌曲
+        print('search')
+        if self.main_list.currentItem() != None:
+            print(self.main_list.currentRow())
+
+        # 搜索
         self.musiclist = get_music_url_list(self.inputbox.text())
 
+        # 显示搜索结果
         self.main_list.clear()
         for n in range(len(self.musiclist)):
             text = self.musiclist[n][1] + '\n               ——' + self.musiclist[n][2]
             item = QListWidgetItem(text,self.main_list)
-            
 
-        print(self.musiclist)
         self.condition_label.setText(f'已找到 {len(self.musiclist)} 条内容')
 
-    def run_climber(self):
-        pass
+    def download_mp3(self):
+        if self.main_list.currentItem() == None:
+            print('请选择要下载的歌曲')
+        else:
+            download_purpose = self.musiclist[self.main_list.currentRow()]
+            print(download_purpose)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
