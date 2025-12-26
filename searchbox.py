@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout,
                              QLabel, QListWidget, QListWidgetItem)
 from PyQt5.QtGui import QPalette, QColor
 import sys
+import threading
+import time
 from climber import *
 
 COLOR_MODE = 'DARK'
@@ -194,6 +196,7 @@ class SearchBox(QMainWindow):
 
     def show_condition(self,message):
         self.condition_label.setText(message)
+        self.condition_label.update()
 
     def download_mp3(self):
         print('download')
@@ -202,7 +205,6 @@ class SearchBox(QMainWindow):
         else:
             download_purpose = self.musiclist[self.main_list.currentRow()]
             self.show_condition('正在获取下载链接...')
-            self.show()
             url = get_music_download_url(download_purpose[0])
             print(url)
 
