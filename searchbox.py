@@ -4,11 +4,10 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout,
 from PyQt5.QtGui import QPalette, QColor
 import sys
 import threading
-import time
 from climber import *
 
 COLOR_MODE = 'DARK'
-ORIGIN_SEARCH_PURPOSE = 'Run Free'
+ORIGIN_SEARCH_PURPOSE = '那我带你逃跑吧'
 
 class SearchBox(QMainWindow):
     def __init__(self):
@@ -218,8 +217,11 @@ class SearchBox(QMainWindow):
 
     # 供download_thread_geturl以线程调用
     def download_thread_downloud(self):
-        download_music(self.download_url,self.musiclist[self.main_list.currentRow()][1])
-        self.show_condition('下载成功')
+        status_code = download_music(self.download_url,self.musiclist[self.main_list.currentRow()][1])
+        if status_code == 200:
+            self.show_condition('下载成功')
+        else:
+            self.show_condition(str('下载失败，状态码：'+str(status_code)))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

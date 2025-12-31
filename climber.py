@@ -94,5 +94,7 @@ def download_music(download_url,file_path):
             for chunk in response.iter_content(chunk_size=8192):
                 file.write(chunk)
         print("MP3 文件下载成功")
+        return 200
     else:
         print("无法下载 MP3 文件，状态码：", response.status_code)
+        return response.status_code
