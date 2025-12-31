@@ -16,6 +16,7 @@ class SearchBox(QMainWindow):
 
         self.input_text = ORIGIN_SEARCH_PURPOSE
         self.button_list = []
+        self.download_url = ''
 
         self.initUI()
         self.init_layout()
@@ -178,7 +179,8 @@ class SearchBox(QMainWindow):
                     }
                     ''')
 
-    def search(self):# 查找歌曲
+    # 查找歌曲并更新列表
+    def search(self):
         print('search')
         if self.main_list.currentItem() != None:
             print(self.main_list.currentRow())
@@ -194,6 +196,7 @@ class SearchBox(QMainWindow):
 
         self.show_condition(f'已找到 {len(self.musiclist)} 条内容')
 
+    # 更新状态栏
     def show_condition(self,message):
         self.condition_label.setText(message)
         self.condition_label.update()
@@ -203,10 +206,20 @@ class SearchBox(QMainWindow):
         if self.main_list.currentItem() == None:
             print('请选择要下载的歌曲')
         else:
-            download_purpose = self.musiclist[self.main_list.currentRow()]
             self.show_condition('正在获取下载链接...')
-            url = get_music_download_url(download_purpose[0])
-            print(url)
+            # 启动下载线程，以避免主线程阻塞使显示栏不更新
+            threading.Thread(target = self.download_thread_geturl).start()
+
+    # 供download_mp3函数以线程调用
+    def download_thread_geturl(self):
+        self.download_url = get_music_download_url(self.musiclist[self.main_list.currentRow()][0])
+        self.show_condition('正在下载...')
+        threading.Thread(target=self.download_thread_downloud).start()
+
+    # 供download_thread_geturl以线程调用
+    def download_thread_downloud(self):
+        download_music(self.download_url,self.musiclist[self.main_list.currentRow()][1])
+        self.show_condition('下载成功')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
