@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.edge.options import Options
+from log_recorder import log
 
 headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
 verify = False #  关闭证书验证，解决Win10的SSL过期问题
@@ -94,5 +95,9 @@ def download_music(download_url,file_path):
             for chunk in response.iter_content(chunk_size=8192):
                 file.write(chunk)
         print("MP3 文件下载成功")
+        return 200
     else:
-        print("无法下载 MP3 文件，状态码：", response.status_code)
+        error_message = '无法下载 MP3 文件，状态码：', response.status_code
+        print(error_message)
+        log('warning',error_message)
+        return response.status_code
