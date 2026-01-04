@@ -7,7 +7,7 @@ import threading
 from climber import *
 
 COLOR_MODE = 'DARK'
-ORIGIN_SEARCH_PURPOSE = '那我带你逃跑吧'
+ORIGIN_SEARCH_PURPOSE = 'all for love'
 
 class SearchBox(QMainWindow):
     def __init__(self):
