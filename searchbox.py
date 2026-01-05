@@ -187,6 +187,11 @@ class SearchBox(QMainWindow):
         # 搜索
         self.musiclist = get_music_url_list(self.inputbox.text())
 
+        # 处理错误
+        if isinstance(self.musiclist,str):
+            self.show_condition(self.musiclist)
+            return None
+
         # 显示搜索结果
         self.main_list.clear()
         for n in range(len(self.musiclist)):

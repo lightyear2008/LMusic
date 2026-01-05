@@ -13,7 +13,7 @@ custom_formatter = CustomFormatter(log_format, datefmt='%Y-%m-%d %H:%M:%S')
 
 logging.basicConfig(
     filename='logs\\log.log',
-    level=logging.DEBUG,
+    level=logging.WARNING,
     format=log_format,
     datefmt='%Y-%m-%d %H:%M:%S',
     encoding='utf-8'

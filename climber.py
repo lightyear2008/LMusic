@@ -17,9 +17,35 @@ def get_music_url_list(name):
     # 替换歌曲名中的空格为%20
     if ' ' in name:
         name = name.replace(' ','%20')
-    url = 'https://www.gequbao.com/s/' + name
 
+    # 发送请求
+    url = 'https://www.gequbao.com/s/' + name
     response = requests.get(url,verify = verify,headers = headers)
+
+    # 处理错误
+    if response.status_code == 503:
+        error_message = '服务器已关闭或正在维护中，错误码：503'
+        log('error',error_message)
+        return error_message
+    elif response.status_code == 502:
+        error_message = '网关错误，错误码：502'
+        log('error',error_message)
+        return error_message
+    elif response.status_code == 500:
+        error_message = '服务端错误，错误码：500'
+        log('error',error_message)
+        return error_message
+    elif response.status_code == 404:
+        error_message = '找不到网页，错误码：404'
+        log('error',error_message)
+        return error_message
+    elif response.status_code == 403:
+        error_message = '服务端拒绝请求，错误码：403'
+        log('error',error_message)
+        return error_message
+    elif response.status_code != 200:
+        log('warning',f'可能的错误：HTTP{response.status_code}')
+
     soup = BeautifulSoup(response.text,'html.parser')
 
     music_list = soup.find(class_='card-text').find_all('div', class_='row')  # 找到所有歌曲的div标签
