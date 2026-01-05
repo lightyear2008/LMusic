@@ -217,11 +217,14 @@ class SearchBox(QMainWindow):
     # 供download_mp3函数以线程调用
     def download_thread_geturl(self):
         self.download_url = get_music_download_url(self.musiclist[self.main_list.currentRow()][0])
-        self.show_condition('正在下载...')
-        threading.Thread(target=self.download_thread_downloud).start()
+        if self.download_url != 'url获取失败':
+            self.show_condition('正在下载...')
+            threading.Thread(target=self.download_thread_download).start()# 启动下载线程
+        else:
+            self.show_condition('下载链接获取失败')
 
     # 供download_thread_geturl以线程调用
-    def download_thread_downloud(self):
+    def download_thread_download(self):
         status_code = download_music(self.download_url,self.musiclist[self.main_list.currentRow()][1])
         if status_code == 200:
             self.show_condition('下载成功')

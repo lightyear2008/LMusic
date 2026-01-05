@@ -99,12 +99,13 @@ def get_music_download_url(url):
     # 确保返回值不为空
     for n in range(3):
         if soup.find(class_='default-link').get('href') == '':
-            print('retry')
+            log('warning',f'get_music_download_url中href值为空，重试第{n}次')
             driver.get(url)
             time.sleep(3)
             page_html = driver.page_source
             soup = BeautifulSoup(page_html, 'html.parser')
     if soup.find(class_='default-link').get('href') == '':
+        log('error','get_music_download_url中url获取失败')
         return 'url获取失败'
 
     return soup.find(class_='default-link').get('href')
