@@ -8,7 +8,7 @@ class CustomFormatter(logging.Formatter):
         return super().format(record)
 
 # 配置日志格式和文件
-log_format = '%(asctime)s - %(levelname)s - %(lineno)d - %(funcName)s - %(relativeCreated)d - %(message)s'
+log_format = '%(asctime)s - %(levelname)s - %(funcName)s - %(relativeCreated)d - %(message)s'
 custom_formatter = CustomFormatter(log_format, datefmt='%Y-%m-%d %H:%M:%S')
 
 logging.basicConfig(
