@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout,
                              QLabel, QListWidget, QListWidgetItem)
 from PyQt5.QtGui import QPalette, QColor
 import sys
+import os
 import threading
 from climber import *
 
@@ -225,7 +226,7 @@ class SearchBox(QMainWindow):
 
     # 供download_thread_geturl以线程调用
     def download_thread_download(self):
-        status_code = download_music(self.download_url,self.musiclist[self.main_list.currentRow()][1])
+        status_code = download_music(self.download_url,os.path.join('mp3_db','main_list',self.musiclist[self.main_list.currentRow()][1]))
         if status_code == 200:
             self.show_condition('下载成功')
         else:
