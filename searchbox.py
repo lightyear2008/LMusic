@@ -207,30 +207,30 @@ class SearchBox(QMainWindow):
         self.condition_label.update()
 
     def download_mp3(self):
-        print('download')
+        # 两个线程函数
+        def download_thread_geturl():
+            self.download_url = get_music_download_url(self.musiclist[self.main_list.currentRow()][0])
+            if self.download_url != 'url获取失败':
+                self.show_condition('正在下载...')
+                threading.Thread(target=download_thread_download).start()  # 启动下载线程
+            else:
+                self.show_condition('下载链接获取失败')
+
+        def download_thread_download():
+            status_code = download_music(self.download_url, os.path.join('mp3_db', 'main_list', self.musiclist[
+                self.main_list.currentRow()][1]))
+            if status_code == 200:
+                self.show_condition('下载成功')
+            else:
+                self.show_condition(str('下载失败，状态码：' + str(status_code)))
+
+        # 开始下载操作
         if self.main_list.currentItem() == None:
             print('请选择要下载的歌曲')
         else:
             self.show_condition('正在获取下载链接...')
             # 启动下载线程，以避免主线程阻塞使显示栏不更新
-            threading.Thread(target = self.download_thread_geturl).start()
-
-    # 供download_mp3函数以线程调用
-    def download_thread_geturl(self):
-        self.download_url = get_music_download_url(self.musiclist[self.main_list.currentRow()][0])
-        if self.download_url != 'url获取失败':
-            self.show_condition('正在下载...')
-            threading.Thread(target=self.download_thread_download).start()# 启动下载线程
-        else:
-            self.show_condition('下载链接获取失败')
-
-    # 供download_thread_geturl以线程调用
-    def download_thread_download(self):
-        status_code = download_music(self.download_url,os.path.join('mp3_db','main_list',self.musiclist[self.main_list.currentRow()][1]))
-        if status_code == 200:
-            self.show_condition('下载成功')
-        else:
-            self.show_condition(str('下载失败，状态码：'+str(status_code)))
+            threading.Thread(target = download_thread_geturl).start()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
