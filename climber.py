@@ -2,13 +2,23 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import time
+import logging
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.edge.options import Options
-from log_recorder import log
+
+# 初始化日志记录器
+log_format = '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s'
+logging.basicConfig(
+    filename='logs/log.log',
+    level=logging.WARNING,
+    format=log_format,
+    datefmt='%Y-%m-%d %H:%M:%S',
+    encoding='utf-8'
+)
 
 headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
 verify = False #  关闭证书验证，解决Win10的SSL过期问题
@@ -25,26 +35,26 @@ def get_music_url_list(name):
     # 处理错误
     if response.status_code == 503:
         error_message = '服务器已关闭或正在维护中，错误码：503'
-        log('error',error_message)
+        logging.error(error_message)
         return error_message
     elif response.status_code == 502:
         error_message = '网关错误，错误码：502'
-        log('error',error_message)
+        logging.error(error_message)
         return error_message
     elif response.status_code == 500:
         error_message = '服务端错误，错误码：500'
-        log('error',error_message)
+        logging.error(error_message)
         return error_message
     elif response.status_code == 404:
         error_message = '找不到网页，错误码：404'
-        log('error',error_message)
+        logging.error(error_message)
         return error_message
     elif response.status_code == 403:
         error_message = '服务端拒绝请求，错误码：403'
-        log('error',error_message)
+        logging.error(error_message)
         return error_message
     elif response.status_code != 200:
-        log('warning',f'可能的错误：HTTP{response.status_code}')
+        logging.warning(f'可能的错误：HTTP{response.status_code}')
 
     soup = BeautifulSoup(response.text,'html.parser')
 
@@ -99,13 +109,13 @@ def get_music_download_url(url):
     # 确保返回值不为空
     for n in range(3):
         if soup.find(class_='default-link').get('href') == '':
-            log('warning',f'get_music_download_url中href值为空，重试第{n}次')
+            logging.warning(f'get_music_download_url中href值为空，重试第{n}次')
             driver.get(url)
             time.sleep(3)
             page_html = driver.page_source
             soup = BeautifulSoup(page_html, 'html.parser')
     if soup.find(class_='default-link').get('href') == '':
-        log('error','get_music_download_url中url获取失败')
+        logging.error('get_music_download_url中url获取失败')
         return 'url获取失败'
 
     return soup.find(class_='default-link').get('href')
@@ -126,5 +136,5 @@ def download_music(download_url,file_path):
     else:
         error_message = '无法下载 MP3 文件，状态码：', response.status_code
         print(error_message)
-        log('warning',error_message)
+        logging.warning(error_message)
         return response.status_code
