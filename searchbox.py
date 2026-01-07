@@ -22,7 +22,10 @@ class SearchBox(QMainWindow):
         self.init_layout()
         self.init_CSS()
         self.show()
-        self.search()
+        # 把加载放在线程里，防止无响应
+        def first_search():
+            self.search()
+        threading.Thread(target = first_search()).start()
 
     def initUI(self):
         print('initUI')
@@ -217,8 +220,7 @@ class SearchBox(QMainWindow):
                 self.show_condition('下载链接获取失败')
 
         def download_thread_download():
-            status_code = download_music(self.download_url, os.path.join('mp3_db', 'main_list', self.musiclist[
-                self.main_list.currentRow()][1]))
+            status_code = download_music(self.download_url,os.path.join('mp3_db', 'main_list', self.musiclist[self.main_list.currentRow()][1]))
             if status_code == 200:
                 self.show_condition('下载成功')
             else:
