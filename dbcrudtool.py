@@ -1,6 +1,7 @@
 import base64
 import os
 import ast
+import configparser
 
 def string_to_base64(input_string):
     byte_data = input_string.encode('utf-8')
@@ -35,6 +36,38 @@ def add(target_file,music_name):
     with open(file_path,'w',encoding='utf-8') as f:
         f.write(string_to_base64(str(music_list)))
 
+def delete(target_file,music_name):
+    # 确定文件路径
+    if target_file == 'main':
+        file_path = os.path.join('mp3_db', 'main_db.txt')
+    else:
+        file_path = os.path.join('mp3_db', 'my_lists', target_file)
+
+    # 对target_file操作
+    # 读取文件内容
+    with open(file_path,'r',encoding='utf-8') as f:
+        music_list = ast.literal_eval(base64_to_string(f.read()))
+    # 生成删除目标歌曲后的列表
+    new_list = []
+    for n in music_list:
+        if n[0] != music_name:
+            new_list.append(n)
+    # 覆写文件
+    with open(file_path,'w',encoding='utf-8') as f:
+        f.write(string_to_base64(str(new_list)))
+
+    # 当target_file为main时删除其他歌单中的该歌曲
+    # 读取设置
+    if target_file == 'main':
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        if not bool(config['dbcrudtool']['AUTO_DELETE']):
+            return None
+        for file_name in os.listdir(os.path.join('mp3_db','my_lists')):
+            print(file_name)
+
+
+            #没完
 
 if __name__ == '__main__':
-    add('main','adfdfkvnadkofgmqe')
+    add('list2.txt','b')
