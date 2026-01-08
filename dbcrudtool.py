@@ -24,8 +24,12 @@ def add(target_file,music_name):
     with open(file_path,'r',encoding='utf-8') as f:
         music_list = ast.literal_eval(base64_to_string(f.read()))
 
-    # 添加列表
-    music_list.append([music_name,0,0])
+    # 添加歌曲(防止重复)
+    if music_name in [n[0] for n in music_list]:
+        print('文件已存在')
+        return '文件已存在'
+    else:
+        music_list.append([music_name,0,0])
 
     # 覆写文件
     with open(file_path,'w',encoding='utf-8') as f:
@@ -33,4 +37,4 @@ def add(target_file,music_name):
 
 
 if __name__ == '__main__':
-    add('main','aaa')
+    add('main','adfdfkvnadkofgmqe')
