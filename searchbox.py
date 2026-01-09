@@ -6,6 +6,7 @@ import sys
 import os
 import threading
 from climber import *
+from dbcrudtool import add
 
 COLOR_MODE = 'DARK'
 ORIGIN_SEARCH_PURPOSE = 'all for love'
@@ -223,6 +224,7 @@ class SearchBox(QMainWindow):
             status_code = download_music(self.download_url,os.path.join('mp3_db', 'main_list', self.musiclist[self.main_list.currentRow()][1]))
             if status_code == 200:
                 self.show_condition('下载成功')
+                add('main',self.musiclist[self.main_list.currentRow()][1])
             else:
                 self.show_condition(str('下载失败，状态码：' + str(status_code)))
 

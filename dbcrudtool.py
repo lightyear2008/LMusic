@@ -110,8 +110,6 @@ def show(target_file):
     return music_list
 
 if __name__ == '__main__':
-    update('main','a',2,3600)
-    print()
     show('main')
     show('list1.txt')
     show('list2.txt')
