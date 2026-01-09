@@ -77,8 +77,24 @@ def delete(target_file,music_name):
             with open(full_path,'w',encoding='utf-8') as f:
                 f.write(string_to_base64(str(new_list)))
 
-def update(target_file,music_name):
-    pass
+def update(target_file,music_name,index,num):  # index为1时更改播放次数,为2时更改播放秒数
+    # 确定文件路径
+    if target_file == 'main':
+        file_path = os.path.join('mp3_db', 'main_db.txt')
+    else:
+        file_path = os.path.join('mp3_db', 'my_lists', target_file)
+
+    # 读取文件内容
+    with open(file_path, 'r', encoding='utf-8') as f:
+        music_list = ast.literal_eval(base64_to_string(f.read()))
+
+    # 更新操作
+    for n in music_list:
+        if n[0] == music_name:
+            n[index] = num
+
+    with open(file_path,'w',encoding='utf-8') as f:
+        f.write(string_to_base64(str(music_list)))
 
 def show(target_file):
     # 确定文件路径
@@ -91,9 +107,10 @@ def show(target_file):
         music_list = ast.literal_eval(base64_to_string(f.read()))
 
     print(music_list)
+    return music_list
 
 if __name__ == '__main__':
-    add('list1.txt','aa')
+    update('main','a',2,3600)
     print()
     show('main')
     show('list1.txt')

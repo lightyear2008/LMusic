@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import os
 import time
 import logging
+import configparser
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.by import By
@@ -21,7 +22,12 @@ logging.basicConfig(
 )
 
 headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
-verify = False #  关闭证书验证，解决Win10的SSL过期问题
+config = configparser.ConfigParser()
+config.read('config.ini')
+if config['main']['VERIFY'] == 'False':
+    verify = False #  关闭证书验证，解决Win10的SSL过期问题
+else:
+    verify = True
 
 def get_music_url_list(name):
     # 替换歌曲名中的空格为%20
