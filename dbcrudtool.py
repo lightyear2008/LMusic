@@ -57,17 +57,44 @@ def delete(target_file,music_name):
         f.write(string_to_base64(str(new_list)))
 
     # 当target_file为main时删除其他歌单中的该歌曲
-    # 读取设置
     if target_file == 'main':
+        # 读取设置
         config = configparser.ConfigParser()
         config.read('config.ini')
-        if not bool(config['dbcrudtool']['AUTO_DELETE']):
+        if config['dbcrudtool']['AUTO_DELETE'] == 'False':
             return None
+        # 对其他歌单中的文件删除
         for file_name in os.listdir(os.path.join('mp3_db','my_lists')):
-            print(file_name)
+            full_path = os.path.join('mp3_db', 'my_lists',file_name)
+            with open(full_path,'r',encoding='utf-8') as f:
+                music_list = ast.literal_eval(base64_to_string(f.read()))
 
+            new_list = []
+            for n in music_list:
+                if n[0] != music_name:
+                    new_list.append(n)
 
-            #没完
+            with open(full_path,'w',encoding='utf-8') as f:
+                f.write(string_to_base64(str(new_list)))
+
+def update(target_file,music_name):
+    pass
+
+def show(target_file):
+    # 确定文件路径
+    if target_file == 'main':
+        file_path = os.path.join('mp3_db', 'main_db.txt')
+    else:
+        file_path = os.path.join('mp3_db', 'my_lists', target_file)
+
+    with open(file_path,'r',encoding='utf-8') as f:
+        music_list = ast.literal_eval(base64_to_string(f.read()))
+
+    print(music_list)
 
 if __name__ == '__main__':
-    add('list2.txt','b')
+    add('list1.txt','aa')
+    print()
+    show('main')
+    show('list1.txt')
+    show('list2.txt')
