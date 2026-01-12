@@ -1,16 +1,73 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel)
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
+                             QLineEdit)
 from PyQt5.QtGui import QPalette, QColor, QPixmap
 import sys
 import os
 
 COLOR_MODE = 'DARK'
 
-class page1:
+class main_page:
     def __init__(self):
         pass
 
-class MainWindow(QMainWindow):
+    def initUI(self):
+        self.searchbox = QLineEdit()
+
+        self.search_button = QPushButton('搜索')
+        self.search_button.clicked.connect(self.search)
+
+    def init_layout(self):
+        # 主布局(竖方向)
+        self.page_main = QVBoxLayout()
+        self.page_main.setAlignment(Qt.AlignTop)  # 将元素全部靠顶部对齐
+        self.page_main.addSpacing(20)  # 设置竖直方向的间距为10
+
+        # 搜索栏和搜索按钮
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(self.searchbox,stretch=4)
+        search_layout.addWidget(self.search_button,stretch=1)
+
+        self.page_main.addLayout(search_layout)
+
+    def search(self):
+        pass
+
+    def init_CSS_DARK(self):
+        self.searchbox.setStyleSheet('''
+                QLineEdit {
+                    background-color: #D0D2D4;
+                    min-height: 80px;
+                    border-radius: 40px;
+                    font-size: 45px;
+                    color: #239B56;
+                }
+                ''')
+        self.search_button.setStyleSheet('''
+                QPushButton {
+                        background-color: #3574F0;
+                        border: none;
+                        border-radius: 40px;
+                        font-weight: bold;
+                        color: white;
+                        min-height: 80px;
+                    }
+                    QPushButton:pressed {
+                        background-color: #4584FF;
+                        border: 5px inset #4584FF;
+                    }
+                ''')
+
+
+class page2:
+    def __init__(self):
+        pass
+
+    def initUI(self):
+        pass
+
+
+class MainWindow(QMainWindow,main_page):
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -53,7 +110,8 @@ class MainWindow(QMainWindow):
         # logo和左侧按钮列表
         self.logo = QLabel('logo')
         self.logo.setPixmap(QPixmap(os.path.join('images','logo.jpg')))
-        self.logo.setFixedSize(100,100)
+        self.logo.setMaximumHeight(150)  #最大高度
+        self.logo.setScaledContents(True)  #图片填充
 
         self.main_page_button = QPushButton('主页')
         self.ranking_page_button = QPushButton('排名')
@@ -61,7 +119,8 @@ class MainWindow(QMainWindow):
         self.stargame_page_button = QPushButton('星')
         self.config_page_button = QPushButton('设置')
 
-        self.b = QPushButton('page1')
+        # 右侧主页面(继承)
+        main_page.initUI(self)
 
     def init_main_layout(self):
         # 主布局,包括左侧菜单栏和右侧页面
@@ -78,10 +137,9 @@ class MainWindow(QMainWindow):
         left_button_layout.setAlignment(Qt.AlignTop)  #将元素全部靠顶部对齐
         main_layout.addLayout(left_button_layout,stretch=1)
 
-        # 右侧主界面
-        page_main = QVBoxLayout()
-        page_main.addWidget(self.b)
-        main_layout.addLayout(page_main,stretch=10)
+        # 右侧主界面(继承)
+        main_page.init_layout(self)
+        main_layout.addLayout(self.page_main, stretch=10)
 
         # 安置主布局
         container = QWidget()
@@ -95,6 +153,9 @@ class MainWindow(QMainWindow):
                         background-color: rgb(100,100,100); 
                     }
                     ''')
+
+        # 右侧主页面(继承)
+        main_page.init_CSS_DARK(self)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
