@@ -1,9 +1,14 @@
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel)
 from PyQt5.QtGui import QPalette, QColor, QPixmap
 import sys
 import os
 
 COLOR_MODE = 'DARK'
+
+class page1:
+    def __init__(self):
+        pass
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -48,10 +53,15 @@ class MainWindow(QMainWindow):
         # logo和左侧按钮列表
         self.logo = QLabel('logo')
         self.logo.setPixmap(QPixmap(os.path.join('images','logo.jpg')))
+        self.logo.setFixedSize(100,100)
 
-        self.main_page_button = QPushButton('aaaaaaaaaa')
+        self.main_page_button = QPushButton('主页')
+        self.ranking_page_button = QPushButton('排名')
+        self.musicsquare_page_button = QPushButton('广场')
+        self.stargame_page_button = QPushButton('星')
+        self.config_page_button = QPushButton('设置')
 
-        self.b = QPushButton('aaa')
+        self.b = QPushButton('page1')
 
     def init_main_layout(self):
         # 主布局,包括左侧菜单栏和右侧页面
@@ -60,7 +70,12 @@ class MainWindow(QMainWindow):
         # 左侧菜单栏,包括上部的logo和下面的页面切换按钮列表
         left_button_layout = QVBoxLayout()
         left_button_layout.addWidget(self.logo,stretch=1)
-        left_button_layout.addWidget(self.main_page_button, stretch=1)
+        left_button_layout.addWidget(self.main_page_button,stretch=1)
+        left_button_layout.addWidget(self.ranking_page_button,stretch=1)
+        left_button_layout.addWidget(self.musicsquare_page_button,stretch=1)
+        left_button_layout.addWidget(self.stargame_page_button,stretch=1)
+        left_button_layout.addWidget(self.config_page_button,stretch=1)
+        left_button_layout.setAlignment(Qt.AlignTop)  #将元素全部靠顶部对齐
         main_layout.addLayout(left_button_layout,stretch=1)
 
         # 右侧主界面
