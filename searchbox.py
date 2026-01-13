@@ -5,17 +5,18 @@ from PyQt5.QtGui import QPalette, QColor
 import sys
 import os
 import threading
+import configparser
 from climber import *
 from dbcrudtool import add
 
-COLOR_MODE = 'DARK'
-ORIGIN_SEARCH_PURPOSE = 'all for love'
-
 class SearchBox(QMainWindow):
-    def __init__(self):
+    def __init__(self,ORIGIN_SEARCH_PURPOSE):
         super().__init__()
 
         self.input_text = ORIGIN_SEARCH_PURPOSE
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.COLOR_MODE = config['main']['COLOR_MODE']
         self.button_list = []
         self.download_url = ''
 
@@ -36,7 +37,7 @@ class SearchBox(QMainWindow):
         self.setMinimumSize(1000, 1400)
         # 设置主窗口背景色
         palette = QPalette()
-        if COLOR_MODE == 'LIGHT':
+        if self.COLOR_MODE == 'LIGHT':
             palette.setColor(QPalette.Window, QColor(255, 255, 255))  # 浅色背景
         else:
             palette.setColor(QPalette.Window, QColor(43,45,48))  # 深色背景
@@ -239,12 +240,12 @@ class SearchBox(QMainWindow):
 def run(search_purpose):
     ORIGIN_SEARCH_PURPOSE = search_purpose
     app = QApplication(sys.argv)
-    window = SearchBox()
+    window = SearchBox(ORIGIN_SEARCH_PURPOSE)
     window.show()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = SearchBox()
+    window = SearchBox('all for love')
     window.show()
     sys.exit(app.exec_())

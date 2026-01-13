@@ -34,7 +34,8 @@ class main_page:
 
     def search(self):
         def thread():
-            run(self.searchbox.getTextMargins())
+            print(self.searchbox.text())
+            run(self.searchbox.text())
         threading.Thread(target=thread).start()  #没有线程会崩,虽然说不知道为啥
 
     def init_CSS_DARK(self):
