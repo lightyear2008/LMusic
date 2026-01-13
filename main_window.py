@@ -34,9 +34,10 @@ class main_page:
 
     def search(self):
         def thread():
-            print(self.searchbox.text())
             run(self.searchbox.text())
-        threading.Thread(target=thread).start()  #没有线程会崩,虽然说不知道为啥
+        lock = threading.Lock()
+        with lock:
+            threading.Thread(target=thread).start()  #没有线程会崩,虽然说不知道为啥
 
     def init_CSS_DARK(self):
         self.searchbox.setStyleSheet('''
@@ -73,11 +74,11 @@ class ranking_page:
 
     def init_layout(self):
         # 主布局(竖方向)
-        self.page_main = QVBoxLayout()
-        self.page_main.setAlignment(Qt.AlignTop)  # 将元素全部靠顶部对齐
-        self.page_main.addSpacing(20)  # 设置竖直方向的间距为10
+        self.page_ranking = QVBoxLayout()
+        self.page_ranking.setAlignment(Qt.AlignTop)  # 将元素全部靠顶部对齐
+        self.page_ranking.addSpacing(20)  # 设置竖直方向的间距为10
 
-        self.page_main.addWidget(self.button)
+        self.page_ranking.addWidget(self.button)
 
     def init_CSS_DARK(self):
         pass
@@ -183,7 +184,7 @@ class MainWindow(QMainWindow,main_page,ranking_page):
             main_layout.addLayout(self.page_main,stretch=10)
         elif self.page == 'ranking_page':
             ranking_page.init_layout(self)
-            main_layout.addLayout(self.page_main,stretch=10)
+            main_layout.addLayout(self.page_ranking,stretch=10)
 
         # 安置主布局
         container = QWidget()
@@ -208,4 +209,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

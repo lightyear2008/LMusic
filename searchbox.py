@@ -242,10 +242,10 @@ def run(search_purpose):
     app = QApplication(sys.argv)
     window = SearchBox(ORIGIN_SEARCH_PURPOSE)
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = SearchBox('all for love')
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
