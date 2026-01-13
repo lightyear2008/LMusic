@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QHBoxLayout, QWidget, QP
 from PyQt5.QtGui import QPalette, QColor, QPixmap
 import sys
 import os
+import threading
+from searchbox import run
 
 COLOR_MODE = 'DARK'
 
@@ -31,7 +33,9 @@ class main_page:
         self.page_main.addLayout(search_layout)
 
     def search(self):
-        pass
+        def thread():
+            run(self.searchbox.getTextMargins())
+        threading.Thread(target=thread).start()  #没有线程会崩,虽然说不知道为啥
 
     def init_CSS_DARK(self):
         self.searchbox.setStyleSheet('''
@@ -59,17 +63,42 @@ class main_page:
                 ''')
 
 
-class page2:
+class ranking_page:
     def __init__(self):
         pass
 
     def initUI(self):
+        self.button = QPushButton('这是第二页')
+
+    def init_layout(self):
+        # 主布局(竖方向)
+        self.page_main = QVBoxLayout()
+        self.page_main.setAlignment(Qt.AlignTop)  # 将元素全部靠顶部对齐
+        self.page_main.addSpacing(20)  # 设置竖直方向的间距为10
+
+        self.page_main.addWidget(self.button)
+
+    def init_CSS_DARK(self):
         pass
 
 
-class MainWindow(QMainWindow,main_page):
+class MainWindow(QMainWindow,main_page,ranking_page):
     def __init__(self):
+        self.page = 'main_page'
+
         super().__init__()
+        self.initUI()
+        self.init_main_layout()
+        self.init_CSS_DARK()
+
+    def update_UI_to_main_page(self):
+        self.page = 'main_page'
+        self.initUI()
+        self.init_main_layout()
+        self.init_CSS_DARK()
+
+    def update_UI_to_ranking_page(self):
+        self.page = 'ranking_page'
         self.initUI()
         self.init_main_layout()
         self.init_CSS_DARK()
@@ -114,13 +143,23 @@ class MainWindow(QMainWindow,main_page):
         self.logo.setScaledContents(True)  #图片填充
 
         self.main_page_button = QPushButton('主页')
+        self.main_page_button.clicked.connect(self.update_UI_to_main_page)
+
         self.ranking_page_button = QPushButton('排名')
+        self.ranking_page_button.clicked.connect(self.update_UI_to_ranking_page)
+
         self.musicsquare_page_button = QPushButton('广场')
+
         self.stargame_page_button = QPushButton('星')
+
         self.config_page_button = QPushButton('设置')
 
+
         # 右侧主页面(继承)
-        main_page.initUI(self)
+        if self.page == 'main_page':
+            main_page.initUI(self)
+        elif self.page == 'ranking_page':
+            ranking_page.initUI(self)
 
     def init_main_layout(self):
         # 主布局,包括左侧菜单栏和右侧页面
@@ -138,8 +177,12 @@ class MainWindow(QMainWindow,main_page):
         main_layout.addLayout(left_button_layout,stretch=1)
 
         # 右侧主界面(继承)
-        main_page.init_layout(self)
-        main_layout.addLayout(self.page_main, stretch=10)
+        if self.page == 'main_page':
+            main_page.init_layout(self)
+            main_layout.addLayout(self.page_main,stretch=10)
+        elif self.page == 'ranking_page':
+            ranking_page.init_layout(self)
+            main_layout.addLayout(self.page_main,stretch=10)
 
         # 安置主布局
         container = QWidget()
@@ -155,7 +198,10 @@ class MainWindow(QMainWindow,main_page):
                     ''')
 
         # 右侧主页面(继承)
-        main_page.init_CSS_DARK(self)
+        if self.page == 'main_page':
+            main_page.init_CSS_DARK(self)
+        elif self.page == 'ranking_page':
+            ranking_page.init_CSS_DARK(self)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

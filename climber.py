@@ -122,8 +122,10 @@ def get_music_download_url(url):
             soup = BeautifulSoup(page_html, 'html.parser')
     if soup.find(class_='default-link').get('href') == '':
         logging.error('get_music_download_url中url获取失败')
+        driver.quit()
         return 'url获取失败'
 
+    driver.quit()
     return soup.find(class_='default-link').get('href')
 
 def download_music(download_url,file_path):
