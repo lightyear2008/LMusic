@@ -237,13 +237,6 @@ class SearchBox(QMainWindow):
             # 启动下载线程，以避免主线程阻塞使显示栏不更新
             threading.Thread(target = download_thread_geturl).start()
 
-def run(search_purpose):
-    ORIGIN_SEARCH_PURPOSE = search_purpose
-    app = QApplication(sys.argv)
-    window = SearchBox(ORIGIN_SEARCH_PURPOSE)
-    window.show()
-    sys.exit(app.exec())
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = SearchBox('all for love')

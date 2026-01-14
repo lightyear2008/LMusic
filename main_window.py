@@ -1,11 +1,10 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
                              QLineEdit)
-from PyQt5.QtGui import QPalette, QColor, QPixmap
+from PyQt5.QtGui import QPalette, QColor, QPixmap, QIcon
 import sys
 import os
-import threading
-from searchbox import run
+from searchbox import SearchBox
 
 COLOR_MODE = 'DARK'
 
@@ -23,7 +22,7 @@ class main_page:
         # 主布局(竖方向)
         self.page_main = QVBoxLayout()
         self.page_main.setAlignment(Qt.AlignTop)  # 将元素全部靠顶部对齐
-        self.page_main.addSpacing(20)  # 设置竖直方向的间距为10
+        self.page_main.addSpacing(25)  # 设置竖直方向间距
 
         # 搜索栏和搜索按钮
         search_layout = QHBoxLayout()
@@ -33,11 +32,9 @@ class main_page:
         self.page_main.addLayout(search_layout)
 
     def search(self):
-        def thread():
-            run(self.searchbox.text())
-        lock = threading.Lock()
-        with lock:
-            threading.Thread(target=thread).start()  #没有线程会崩,虽然说不知道为啥
+        # 这里之前用的线程,跑不了,显示'进程已结束，退出代码为 -1073741819 (0xC0000005)'
+        self.search_window = SearchBox(self.searchbox.text())
+        self.search_window.show()
 
     def init_CSS_DARK_main(self):
         self.searchbox.setStyleSheet('''
@@ -149,6 +146,7 @@ class MainWindow(QMainWindow,main_page,ranking_page):
         self.logo.setScaledContents(True)  #图片填充
 
         self.main_page_button = QPushButton('主页')
+        self.main_page_button.setIcon(QIcon(os.path.join('images','main_page.jpg')))  # 设置图标
         self.main_page_button.clicked.connect(self.update_UI_to_main_page)
 
         self.ranking_page_button = QPushButton('排名')
@@ -201,11 +199,54 @@ class MainWindow(QMainWindow,main_page,ranking_page):
         self.main_page_button.setStyleSheet('''
                 QPushButton {
                     border: none;
-                    background-color: #212F3D;
+                    border-bottom: 1px solid blue;
+                    background-color: #1F1F1F;
                     min-height: 120px;
-                    font-weight: bold;
                     color: white;
-                    font-size: 40px;
+                    font-size: 35px;
+                    font-family: Courier New;
+                }
+                ''')
+        self.ranking_page_button.setStyleSheet('''
+                QPushButton {
+                    border: none;
+                    border-bottom: 1px solid blue;
+                    background-color: #1F1F1F;
+                    min-height: 120px;
+                    color: white;
+                    font-size: 35px;
+                    font-family: Courier New;
+                }
+                ''')
+        self.musicsquare_page_button.setStyleSheet('''
+                QPushButton {
+                    border: none;
+                    border-bottom: 1px solid blue;
+                    background-color: #1F1F1F;
+                    min-height: 120px;
+                    color: white;
+                    font-size: 35px;
+                    font-family: Courier New;
+                }
+                ''')
+        self.stargame_page_button.setStyleSheet('''
+                QPushButton {
+                    border: none;
+                    border-bottom: 1px solid blue;
+                    background-color: #1F1F1F;
+                    min-height: 120px;
+                    color: white;
+                    font-size: 35px;
+                    font-family: Courier New;
+                }
+                ''')
+        self.config_page_button.setStyleSheet('''
+                QPushButton {
+                    border: none;
+                    background-color: #1F1F1F;
+                    min-height: 120px;
+                    color: white;
+                    font-size: 35px;
                     font-family: Courier New;
                 }
                 ''')
