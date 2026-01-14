@@ -13,13 +13,13 @@ class main_page:
     def __init__(self):
         pass
 
-    def initUI(self):
+    def initUI_main(self):
         self.searchbox = QLineEdit()
 
         self.search_button = QPushButton('搜索')
         self.search_button.clicked.connect(self.search)
 
-    def init_layout(self):
+    def init_layout_main(self):
         # 主布局(竖方向)
         self.page_main = QVBoxLayout()
         self.page_main.setAlignment(Qt.AlignTop)  # 将元素全部靠顶部对齐
@@ -39,7 +39,7 @@ class main_page:
         with lock:
             threading.Thread(target=thread).start()  #没有线程会崩,虽然说不知道为啥
 
-    def init_CSS_DARK(self):
+    def init_CSS_DARK_main(self):
         self.searchbox.setStyleSheet('''
                 QLineEdit {
                     background-color: #D0D2D4;
@@ -47,6 +47,10 @@ class main_page:
                     border-radius: 40px;
                     font-size: 45px;
                     color: #239B56;
+                }
+                QLineEdit:focus {
+                    border: 6px solid;
+                    border-color: qradialgradient(cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 #66B2FF, stop:1 #0056FF);
                 }
                 ''')
         self.search_button.setStyleSheet('''
@@ -69,10 +73,10 @@ class ranking_page:
     def __init__(self):
         pass
 
-    def initUI(self):
+    def initUI_ranking(self):
         self.button = QPushButton('这是第二页')
 
-    def init_layout(self):
+    def init_layout_ranking(self):
         # 主布局(竖方向)
         self.page_ranking = QVBoxLayout()
         self.page_ranking.setAlignment(Qt.AlignTop)  # 将元素全部靠顶部对齐
@@ -80,7 +84,7 @@ class ranking_page:
 
         self.page_ranking.addWidget(self.button)
 
-    def init_CSS_DARK(self):
+    def init_CSS_DARK_ranking(self):
         pass
 
 
@@ -159,9 +163,9 @@ class MainWindow(QMainWindow,main_page,ranking_page):
 
         # 右侧主页面(继承)
         if self.page == 'main_page':
-            main_page.initUI(self)
+            main_page.initUI_main(self)
         elif self.page == 'ranking_page':
-            ranking_page.initUI(self)
+            ranking_page.initUI_ranking(self)
 
     def init_main_layout(self):
         # 主布局,包括左侧菜单栏和右侧页面
@@ -169,6 +173,7 @@ class MainWindow(QMainWindow,main_page,ranking_page):
 
         # 左侧菜单栏,包括上部的logo和下面的页面切换按钮列表
         left_button_layout = QVBoxLayout()
+        left_button_layout.setSpacing(0)
         left_button_layout.addWidget(self.logo,stretch=1)
         left_button_layout.addWidget(self.main_page_button,stretch=1)
         left_button_layout.addWidget(self.ranking_page_button,stretch=1)
@@ -180,10 +185,10 @@ class MainWindow(QMainWindow,main_page,ranking_page):
 
         # 右侧主界面(继承)
         if self.page == 'main_page':
-            main_page.init_layout(self)
+            main_page.init_layout_main(self)
             main_layout.addLayout(self.page_main,stretch=10)
         elif self.page == 'ranking_page':
-            ranking_page.init_layout(self)
+            ranking_page.init_layout_ranking(self)
             main_layout.addLayout(self.page_ranking,stretch=10)
 
         # 安置主布局
@@ -194,16 +199,22 @@ class MainWindow(QMainWindow,main_page,ranking_page):
 
     def init_CSS_DARK(self):
         self.main_page_button.setStyleSheet('''
-                    QPushButton {
-                        background-color: rgb(100,100,100); 
-                    }
-                    ''')
+                QPushButton {
+                    border: none;
+                    background-color: #212F3D;
+                    min-height: 120px;
+                    font-weight: bold;
+                    color: white;
+                    font-size: 40px;
+                    font-family: Courier New;
+                }
+                ''')
 
         # 右侧主页面(继承)
         if self.page == 'main_page':
-            main_page.init_CSS_DARK(self)
+            main_page.init_CSS_DARK_main(self)
         elif self.page == 'ranking_page':
-            ranking_page.init_CSS_DARK(self)
+            ranking_page.init_CSS_DARK_ranking(self)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
