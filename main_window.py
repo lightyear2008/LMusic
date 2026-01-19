@@ -24,12 +24,34 @@ class main_page:
         self.page_main.setAlignment(Qt.AlignTop)  # 将元素全部靠顶部对齐
         self.page_main.addSpacing(25)  # 设置竖直方向间距
 
-        # 搜索栏和搜索按钮
+        # 1.搜索栏和搜索按钮
         search_layout = QHBoxLayout()
         search_layout.addWidget(self.searchbox,stretch=4)
         search_layout.addWidget(self.search_button,stretch=1)
-
         self.page_main.addLayout(search_layout)
+
+
+        # 2.主布局第二行横向布局,包括(当前播放列表 主页播放器 (打开微型播放器 音量)竖直布局)
+        self.second_layout = QVBoxLayout()
+
+        # 2.1当前播放列表
+        self.now_playing_list_container = QWidget()
+        self.now_playing_list_layout = QHBoxLayout(self.now_playing_list_container)
+        # 2.1.1('当前列表名'标签和切换列表按钮)的横向布局
+        now_playing_list_inner_top_layout = QHBoxLayout()# 创建2.1.1
+        # 2.1.1.1'当前列表名'标签
+        self.now_playing_list_inner_top_label = QLabel('list_name')
+        now_playing_list_inner_top_layout.addWidget(self.now_playing_list_inner_top_label)
+        # 2.1.1.2切换列表按钮
+        self.now_playing_list_inner_switch_button = QPushButton('切换')
+        now_playing_list_inner_top_layout.addWidget(self.now_playing_list_inner_switch_button)
+        # 2.1.2不定长播放列表
+        pass
+        #self.now_playing_list_layout.addLayout(self.playlist)# 这没写完111111111
+
+        self.now_playing_list_layout.addLayout(now_playing_list_inner_top_layout)# 2.1.1结束
+        self.second_layout.addWidget(self.now_playing_list_container)#2.1结束
+        self.page_main.addLayout(self.second_layout)#2.结束
 
     def search(self):
         # 这里之前用的线程,跑不了,显示'进程已结束，退出代码为 -1073741819 (0xC0000005)'
@@ -65,6 +87,23 @@ class main_page:
                     }
                 ''')
 
+        self.now_playing_list_container.setAutoFillBackground(True)
+        self.now_playing_list_container.setStyleSheet('''
+                QWidget {
+                    border-radius: 10px;
+                    background: #000000;
+                }
+                ''')
+        self.now_playing_list_inner_top_label.setStyleSheet('''
+                QLabel {
+                    color: white;
+                }
+                ''')
+        self.now_playing_list_inner_switch_button.setStyleSheet('''
+                QPushButton {
+                    background: #AAAAAA;
+                }
+                ''')
 
 class ranking_page:
     def __init__(self):
