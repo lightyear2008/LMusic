@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
-                             QLineEdit)
+                             QLineEdit, QScrollArea)
 from PyQt5.QtGui import QPalette, QColor, QPixmap, QIcon
 import sys
 import os
@@ -17,6 +17,10 @@ class main_page:
 
         self.search_button = QPushButton('搜索')
         self.search_button.clicked.connect(self.search)
+
+        self.now_playing_list_inner_top_label = QLabel('list_name')
+        self.now_playing_list_inner_switch_button = QPushButton('切换')
+        self.now_playing_list_inner_scroll_area = QScrollArea()
 
     def init_layout_main(self):
         # 主布局(竖方向)
@@ -40,14 +44,12 @@ class main_page:
         # 2.1.1('当前列表名'标签和切换列表按钮)的横向布局
         now_playing_list_inner_top_layout = QHBoxLayout()# 创建2.1.1
         # 2.1.1.1'当前列表名'标签
-        self.now_playing_list_inner_top_label = QLabel('list_name')
         now_playing_list_inner_top_layout.addWidget(self.now_playing_list_inner_top_label)
         # 2.1.1.2切换列表按钮
-        self.now_playing_list_inner_switch_button = QPushButton('切换')
         now_playing_list_inner_top_layout.addWidget(self.now_playing_list_inner_switch_button)
         # 2.1.2不定长播放列表
-        pass
-        #self.now_playing_list_layout.addLayout(self.playlist)# 这没写完111111111
+        self.now_playing_list_layout.addLayout(self.now_playing_list_inner_scroll_area)
+        self.now_playing_list_inner_scroll_area.setWidget()
 
         self.now_playing_list_layout.addLayout(now_playing_list_inner_top_layout)# 2.1.1结束
         self.second_layout.addWidget(self.now_playing_list_container)#2.1结束
