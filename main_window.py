@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
-                             QLineEdit, QScrollArea)
+                             QLineEdit, QScrollArea, QSlider)
 from PyQt5.QtGui import QPalette, QColor, QPixmap, QIcon
 import sys
 import os
@@ -22,6 +22,16 @@ class main_page:
         self.now_playing_list_inner_switch_button = QPushButton('切换')
         self.now_playing_list_inner_scroll_area = QScrollArea()
 
+        self.tiny_player_button = QPushButton('打开微型播放器')
+
+        # 音量条
+        self.volume_slider = QSlider(Qt.Horizontal)
+        self.volume_slider.setMinimum(0)  # 设置最小值
+        self.volume_slider.setMaximum(100)  # 设置最大值
+        self.volume_slider.setValue(50)  # 设置默认值
+        self.volume_slider.setTickInterval(10)  # 设置刻度间隔
+        self.volume_slider.setTickPosition(QSlider.TicksBelow)  # 设置刻度位置
+
     def init_layout_main(self):
         # 主布局(竖方向)
         self.page_main = QVBoxLayout()
@@ -34,26 +44,58 @@ class main_page:
         search_layout.addWidget(self.search_button,stretch=1)
         self.page_main.addLayout(search_layout)
 
-
         # 2.主布局第二行横向布局,包括(当前播放列表 主页播放器 (打开微型播放器 音量)竖直布局)
-        self.second_layout = QVBoxLayout()
+        self.second_layout = QHBoxLayout()
+        def set_second_layout():
+            # 2.1当前播放列表
+            self.now_playing_list_container = QWidget() # 给它写CSS
+            self.now_playing_list_layout = QHBoxLayout(self.now_playing_list_container)
+            def set_now_playing_list():
+                # 2.1.1('当前列表名'标签和切换列表按钮)的横向布局
+                now_playing_list_inner_top_layout = QHBoxLayout()
+                def set_top_layout():
+                    # 2.1.1.1'当前列表名'标签
+                    now_playing_list_inner_top_layout.addWidget(self.now_playing_list_inner_top_label)
+                    # 2.1.1.2切换列表按钮
+                    now_playing_list_inner_top_layout.addWidget(self.now_playing_list_inner_switch_button)
+                set_top_layout()
+                self.now_playing_list_layout.addLayout(now_playing_list_inner_top_layout)# 2.1.1结束
 
-        # 2.1当前播放列表
-        self.now_playing_list_container = QWidget()
-        self.now_playing_list_layout = QHBoxLayout(self.now_playing_list_container)
-        # 2.1.1('当前列表名'标签和切换列表按钮)的横向布局
-        now_playing_list_inner_top_layout = QHBoxLayout()# 创建2.1.1
-        # 2.1.1.1'当前列表名'标签
-        now_playing_list_inner_top_layout.addWidget(self.now_playing_list_inner_top_label)
-        # 2.1.1.2切换列表按钮
-        now_playing_list_inner_top_layout.addWidget(self.now_playing_list_inner_switch_button)
-        # 2.1.2不定长播放列表
-        self.now_playing_list_layout.addLayout(self.now_playing_list_inner_scroll_area)
-        self.now_playing_list_inner_scroll_area.setWidget()
+                # 2.1.2不定长播放列表
+                # 滚动区域内容
+                self.now_playing_list_inner_scroll_area_container = QWidget()
+                scroll_layout = QVBoxLayout(self.now_playing_list_inner_scroll_area_container)
 
-        self.now_playing_list_layout.addLayout(now_playing_list_inner_top_layout)# 2.1.1结束
-        self.second_layout.addWidget(self.now_playing_list_container)#2.1结束
-        self.page_main.addLayout(self.second_layout)#2.结束
+                def set_scroll_layout():
+                    label = QLabel('标签1')
+                    label.setStyleSheet('color: red;')
+                    scroll_layout.addWidget(label)
+                set_scroll_layout()
+
+                self.now_playing_list_inner_scroll_area.setWidget(self.now_playing_list_inner_scroll_area_container)
+                self.now_playing_list_layout.addWidget(self.now_playing_list_inner_scroll_area)
+            set_now_playing_list()
+            self.second_layout.addWidget(self.now_playing_list_container)
+
+            #2.2 主页播放器
+            self.musicplayer_container = QWidget()
+            self.musicplayer_layout = QHBoxLayout(self.musicplayer_container)
+            def set_musicplayer():
+                pass
+            set_musicplayer()
+            self.second_layout.addWidget(self.musicplayer_container)
+
+            #2.3 (打开微型播放器 音量)竖直布局
+            self.open_button_and_volume_layout = QVBoxLayout()
+            def set_open_button_and_volume_layout():
+                # 打开微型播放器按钮
+                self.open_button_and_volume_layout.addWidget(self.tiny_player_button)
+                # 音量条
+                self.open_button_and_volume_layout.addWidget(self.volume_slider)
+            set_open_button_and_volume_layout()
+            self.second_layout.addLayout(self.open_button_and_volume_layout)
+        set_second_layout()
+        self.page_main.addLayout(self.second_layout)
 
     def search(self):
         # 这里之前用的线程,跑不了,显示'进程已结束，退出代码为 -1073741819 (0xC0000005)'
@@ -89,7 +131,7 @@ class main_page:
                     }
                 ''')
 
-        self.now_playing_list_container.setAutoFillBackground(True)
+        
         self.now_playing_list_container.setStyleSheet('''
                 QWidget {
                     border-radius: 10px;
@@ -104,6 +146,13 @@ class main_page:
         self.now_playing_list_inner_switch_button.setStyleSheet('''
                 QPushButton {
                     background: #AAAAAA;
+                }
+                ''')
+
+        self.musicplayer_container.setStyleSheet('''
+                QWidget {
+                    border-radius: 10px;
+                    background: #000000;
                 }
                 ''')
 
@@ -303,3 +352,4 @@ if __name__ == '__main__':
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
+
