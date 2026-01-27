@@ -1,3 +1,5 @@
+from re import search
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
                              QLineEdit, QScrollArea, QSlider)
@@ -28,8 +30,8 @@ class main_page:
         self.volume_slider = QSlider(Qt.Horizontal)
         self.volume_slider.setMinimum(0)  # 设置最小值
         self.volume_slider.setMaximum(100)  # 设置最大值
-        self.volume_slider.setValue(50)  # 设置默认值
-        self.volume_slider.setTickInterval(10)  # 设置刻度间隔
+        self.volume_slider.setValue(80)  # 设置默认值
+        self.volume_slider.setTickInterval(100)  # 设置刻度间隔
         self.volume_slider.setTickPosition(QSlider.TicksBelow)  # 设置刻度位置
 
     def init_layout_main(self):
@@ -40,12 +42,15 @@ class main_page:
 
         # 1.搜索栏和搜索按钮
         search_layout = QHBoxLayout()
+        search_layout.addSpacing(20)
         search_layout.addWidget(self.searchbox,stretch=4)
         search_layout.addWidget(self.search_button,stretch=1)
+        search_layout.addSpacing(20)
         self.page_main.addLayout(search_layout)
 
         # 2.主布局第二行横向布局,包括(当前播放列表 主页播放器 (打开微型播放器 音量)竖直布局)
         self.second_layout = QHBoxLayout()
+        self.second_layout.setSpacing(15)
         def set_second_layout():
             # 2.1当前播放列表
             self.now_playing_list_container = QWidget() # 给它写CSS
@@ -67,15 +72,17 @@ class main_page:
                 scroll_layout = QVBoxLayout(self.now_playing_list_inner_scroll_area_container)
 
                 def set_scroll_layout():
-                    label = QLabel('标签1')
-                    label.setStyleSheet('color: red;')
-                    scroll_layout.addWidget(label)
+                    for n in range(20):
+                        label = QLabel(f'标签{n}')
+                        label.setStyleSheet('color: red;')
+                        scroll_layout.addWidget(label)
                 set_scroll_layout()
 
                 self.now_playing_list_inner_scroll_area.setWidget(self.now_playing_list_inner_scroll_area_container)
-                self.now_playing_list_layout.addWidget(self.now_playing_list_inner_scroll_area)
+                scroll_area_layout = QVBoxLayout(self.now_playing_list_inner_scroll_area)
+                self.now_playing_list_layout.addLayout(scroll_area_layout)
             set_now_playing_list()
-            self.second_layout.addWidget(self.now_playing_list_container)
+            self.second_layout.addWidget(self.now_playing_list_container,stretch=1)
 
             #2.2 主页播放器
             self.musicplayer_container = QWidget()
@@ -83,7 +90,7 @@ class main_page:
             def set_musicplayer():
                 pass
             set_musicplayer()
-            self.second_layout.addWidget(self.musicplayer_container)
+            self.second_layout.addWidget(self.musicplayer_container,stretch=1)
 
             #2.3 (打开微型播放器 音量)竖直布局
             self.open_button_and_volume_layout = QVBoxLayout()
@@ -93,9 +100,23 @@ class main_page:
                 # 音量条
                 self.open_button_and_volume_layout.addWidget(self.volume_slider)
             set_open_button_and_volume_layout()
-            self.second_layout.addLayout(self.open_button_and_volume_layout)
+            self.second_layout.addLayout(self.open_button_and_volume_layout,stretch=1)
         set_second_layout()
-        self.page_main.addLayout(self.second_layout)
+        self.page_main.addSpacing(30)
+        self.page_main.addLayout(self.second_layout,stretch=3)
+
+        #3.主布局第三行横向布局,包括(主歌单 自建歌单横向滚动列表)
+        self.third_layout = QHBoxLayout()
+        self.third_layout.setSpacing(15)
+        def set_third_layout():
+            #3.1 主歌单
+            pass
+
+            #3.2 自建歌单横向滚动列表
+            pass
+        set_third_layout()
+        self.page_main.addSpacing(30)
+        self.page_main.addLayout(self.third_layout,stretch=2)
 
     def search(self):
         # 这里之前用的线程,跑不了,显示'进程已结束，退出代码为 -1073741819 (0xC0000005)'
@@ -131,10 +152,10 @@ class main_page:
                     }
                 ''')
 
-        
+
         self.now_playing_list_container.setStyleSheet('''
                 QWidget {
-                    border-radius: 10px;
+                    border-radius: 15px;
                     background: #000000;
                 }
                 ''')
@@ -151,7 +172,7 @@ class main_page:
 
         self.musicplayer_container.setStyleSheet('''
                 QWidget {
-                    border-radius: 10px;
+                    border-radius: 15px;
                     background: #000000;
                 }
                 ''')

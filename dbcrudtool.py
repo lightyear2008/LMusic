@@ -113,3 +113,6 @@ if __name__ == '__main__':
     show('main')
     show('list1.txt')
     show('list2.txt')
+
+
+    print([n.split('.')[0] for n in os.listdir(os.path.join('mp3_db','my_lists'))])
