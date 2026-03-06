@@ -29,7 +29,7 @@ if config['main']['VERIFY'] == 'False':
 else:
     verify = True
 
-def get_music_url_list(name):
+def get_music_url_list(name): # 因网站更新已重写 最后更改日期2026-3-4
     # 替换歌曲名中的空格为%20
     if ' ' in name:
         name = name.replace(' ','%20')
@@ -71,11 +71,23 @@ def get_music_url_list(name):
     url_list = []
     for n in range(len(music_list)):
         inside_list = []
+
         # 获取URL
-        inside_list.append('https://www.gequbao.com' + str(music_list[n])[str(music_list[n]).find('href') + 6:].split('"')[0])
-        # 获取歌名
-        inside_list.append(music_list[n].find(class_='col-8 col-content').find_all('span')[1].get_text())
-        # 处理作者名(删除换行符和作者名前后的空格)
+        music_item = music_list[n] # 这是一个HTML标签，包含了歌曲的所有信息
+        href_start = str(music_item).find('href') + 6 # URL后半部分开始位置索引
+        href = str(music_item)[href_start:].split('"')[0]
+        full_url = 'https://www.gequbao.com' + href
+        inside_list.append(full_url)
+
+        # 获取歌名(删除换行符和前后的空格)
+        music_name = music_list[n].find_all('span', class_='text-primary font-weight-bold h6 mb-0 text-truncate')[0].get_text()
+        while music_name[0] == ' ' or music_name[0] == '\n':
+            music_name = music_name[1:]
+        while music_name[-1] == ' ' or music_name[-1] == '\n':
+            music_name = music_name[:-1]
+        inside_list.append(music_name)
+
+        # 处理作者名(删除换行符和前后的空格)
         author = music_list[n].find('small').get_text().replace('\n','')
         while author[0] == ' ':
             author = author[1:]
@@ -85,7 +97,7 @@ def get_music_url_list(name):
         url_list.append(inside_list)
     return url_list
 
-def get_music_download_url(url):
+def get_music_download_url(url): # 因网站更新已重写 最后更改日期2026-3-6
     #  设置无头模式和User-Agent
     edge_options = Options()
     edge_options.add_argument("--headless")
@@ -101,36 +113,41 @@ def get_music_download_url(url):
 
     # 等待按钮可点击
     WebDriverWait(driver,20).until(EC.element_to_be_clickable((By.ID,'btn-download-mp3')))
-    time.sleep(2) #  不加href就是空的
-    print('sleeped')
 
     # 点击按钮
     driver.find_element(By.ID,'btn-download-mp3').click()
     print('click')
+    time.sleep(3)
 
-    # 获得HTML并解析
-    page_html = driver.page_source
-    soup = BeautifulSoup(page_html,'html.parser')
-
-    # 确保返回值不为空
-    for n in range(3):
-        if soup.find(class_='default-link').get('href') == '':
-            logging.warning(f'get_music_download_url中href值为空，重试第{n}次')
-            driver.get(url)
-            time.sleep(3)
+    fail_times = 0
+    while True:
+        try:
+            # 获得HTML并解析
             page_html = driver.page_source
             soup = BeautifulSoup(page_html, 'html.parser')
-    if soup.find(class_='default-link').get('href') == '':
-        logging.error('get_music_download_url中url获取失败')
-        driver.quit()
-        return 'url获取失败'
+            # 尝试寻找按钮,找不到会抛出AttributeError异常并进行下一次循环
+            purpose_url = soup.find(class_='download-option-card default-link').get('href')
+            # 运行到此则成功获取URL
+            driver.quit()
+            return purpose_url
+        except AttributeError:
+            fail_times += 1
+            print(f'fail for {fail_times} times')
+            # 处理超时
+            if fail_times >= 40:
+                logging.error('get_music_download_url中url获取超时')
+                driver.quit()
+                return 'url获取失败'
+            time.sleep(1)
+            continue
+        except Exception as e:
+            logging.error(f'get_music_download_url中发生未知错误: {e},重试次数{fail_times}次')
+            driver.quit()
+            return 'url获取失败'
 
-    driver.quit()
-    return soup.find(class_='default-link').get('href')
-
-def download_music(download_url,file_path):
+def download_music(download_url,file_path): # 网站更新未影响该函数正常工作
     # 发送 GET 请求下载 MP3 文件
-    response = requests.get(download_url, stream=True, verify=verify)
+    response = requests.get(download_url, stream=True, verify=verify,headers=headers)
 
     # 检查请求是否成功
     if response.status_code == 200:
@@ -139,10 +156,10 @@ def download_music(download_url,file_path):
             # 写入下载的文件内容
             for chunk in response.iter_content(chunk_size=8192):
                 file.write(chunk)
-        print("MP3 文件下载成功")
+        print('MP3 文件下载成功')
         return 200
     else:
-        error_message = '无法下载 MP3 文件，状态码：', response.status_code
+        error_message = '无法下载 MP3 文件,状态码:', response.status_code
         print(error_message)
         logging.warning(error_message)
         return response.status_code
