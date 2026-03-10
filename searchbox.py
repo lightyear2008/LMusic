@@ -6,6 +6,7 @@ import sys
 import os
 import threading
 import configparser
+import playsound3
 from climber import *
 from dbcrudtool import add
 
@@ -19,6 +20,7 @@ class SearchBox(QMainWindow):
         self.COLOR_MODE = config['main']['COLOR_MODE']
         self.button_list = []
         self.download_url = ''
+        self.sound = None
 
         self.initUI()
         self.init_layout()
@@ -52,6 +54,9 @@ class SearchBox(QMainWindow):
         self.inputbox.setFixedSize(780,80)
         self.inputbox.setPlaceholderText('输入歌曲名...')
         self.inputbox.setText(self.input_text)
+        def return_pressed():
+            self.search_button.click()
+        self.inputbox.returnPressed.connect(return_pressed) # 回车触发点击事件
 
         # 搜索按钮
         self.search_button = QPushButton('搜索',self)
@@ -67,7 +72,7 @@ class SearchBox(QMainWindow):
 
         # 试听按钮
         self.try_button = QPushButton('试听',self)
-        #self.try_button.clicked.connect()
+        self.try_button.clicked.connect(self.try_music)
 
         # 下载按钮
         self.download_button = QPushButton('下载',self)
@@ -190,10 +195,15 @@ class SearchBox(QMainWindow):
         if self.main_list.currentItem() != None:
             print(self.main_list.currentRow())
 
+        # 验证输入框中是否有内容
+        if self.inputbox.text() == '':
+            self.show_condition('请输入搜索内容')
+            return None
+
         # 搜索
         self.musiclist = get_music_url_list(self.inputbox.text())
 
-        # 处理错误
+        # 处理错误(当get_music_url_list错误会返回字符串)
         if isinstance(self.musiclist,str):
             self.show_condition(self.musiclist)
             return None
@@ -237,8 +247,32 @@ class SearchBox(QMainWindow):
             # 启动下载线程，以避免主线程阻塞使显示栏不更新
             threading.Thread(target = download_thread_geturl).start()
 
+    def try_music(self):
+        print('try_music')
+        if self.main_list.currentItem() == None:
+            print('请选择要试听的歌曲')
+            return None
+
+        # 清空目录
+        del_path = 'try_music'
+        for file in os.listdir(del_path):
+            os.remove(os.path.join(del_path,file))
+
+        print(self.musiclist[self.main_list.currentRow()])
+        download_url = get_music_download_url(self.musiclist[self.main_list.currentRow()][0])
+        path = os.path.join('try_music',self.musiclist[self.main_list.currentRow()][1])
+        print(download_url,path)
+        download_music(download_url,path)
+
+        # 播放音乐
+        try:
+            self.sound.stop() # 停止上一个试听
+        except:
+            pass
+        self.sound = playsound3.playsound(path + '.mp3',block=False)
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = SearchBox('all for love')
+    window = SearchBox('so far away')
     window.show()
     sys.exit(app.exec())

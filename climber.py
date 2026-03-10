@@ -98,9 +98,10 @@ def get_music_url_list(name): # 因网站更新已重写 最后更改日期2026-
     return url_list
 
 def get_music_download_url(url): # 因网站更新已重写 最后更改日期2026-3-6
+    print('get_music_download_url')
     #  设置无头模式和User-Agent
     edge_options = Options()
-    edge_options.add_argument("--headless")
+    #edge_options.add_argument("--headless")
     edge_options.add_argument(f"user-agent={headers['User-Agent']}")
 
     # 启动浏览器并发送请求
@@ -112,7 +113,13 @@ def get_music_download_url(url): # 因网站更新已重写 最后更改日期20
     print('get')
 
     # 等待按钮可点击
-    WebDriverWait(driver,20).until(EC.element_to_be_clickable((By.ID,'btn-download-mp3')))
+    try:
+        WebDriverWait(driver,20).until(EC.element_to_be_clickable((By.ID,'btn-download-mp3')))
+    except TimeoutError:
+        logging.error('get_music_download_url中等待按钮点击超时')
+        print('等待按钮点击超时')
+        driver.quit()
+        return 'url获取失败'
 
     # 点击按钮
     driver.find_element(By.ID,'btn-download-mp3').click()

@@ -1,5 +1,3 @@
-from configparser import ConfigParser
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
                              QLineEdit, QScrollArea, QSlider)
@@ -15,25 +13,27 @@ from searchbox import SearchBox
 
 class now_playing_list:
     def __init__(self):
-        config = ConfigParser()
+        config = configparser.ConfigParser()
         config.read('config.ini')
-        print(config['now_playing_message']['now_list'])
+        self.current_list = config['now_playing_message']['now_list']
 
     def npl_initUI(self):
         self.top_label = QLabel('list_name')
         self.switch_button = QPushButton('切换')
 
         self.scroll_area = QScrollArea()
+        self.scroll_area.setFixedHeight(500)
         self.scroll_list = QWidget()
+        self.scroll_list.adjustSize()
         self.scroll_layout = QVBoxLayout(self.scroll_list)
         # add something...
-        l = QLabel('a')
-        l.setStyleSheet('QLabel {color:red;}')
-        self.scroll_layout.addWidget(l)
+        for n in range(10):
+            print('add')
+            l = QLabel('s')
+            l.setStyleSheet('QLabel {color:red;}')
+            self.scroll_layout.addWidget(l)
         # end
         self.scroll_area.setWidget(self.scroll_list)
-
-
 
     def npl_init_layout(self):
         self.npl_container = QWidget()  # 给它写CSS
@@ -48,7 +48,7 @@ class now_playing_list:
         main_layout.addLayout(top_layout)
 
         # 2可滚动列表
-        main_layout.addLayout(QHBoxLayout(self.scroll_area))
+        main_layout.addWidget(self.scroll_area)
 
     def npl_init_CSS_dark(self):
         self.top_label.setStyleSheet('''
@@ -63,11 +63,16 @@ class now_playing_list:
                     border: 1px solid black;
                 }
                 ''')
+        self.scroll_list.setStyleSheet('''
+                QWidget {
+                    min-height: 300px;
+                }
+                ''')
 
 
 class Main_Page(now_playing_list):
     def __init__(self):
-        pass
+        super().__init__()
 
     def initUI_main(self):
         self.searchbox = QLineEdit()
