@@ -101,7 +101,7 @@ def get_music_download_url(url): # 因网站更新已重写 最后更改日期20
     print('get_music_download_url')
     #  设置无头模式和User-Agent
     edge_options = Options()
-    #edge_options.add_argument("--headless")
+    edge_options.add_argument("--headless")
     edge_options.add_argument(f"user-agent={headers['User-Agent']}")
 
     # 启动浏览器并发送请求

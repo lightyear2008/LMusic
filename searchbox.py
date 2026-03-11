@@ -251,6 +251,7 @@ class SearchBox(QMainWindow):
         print('try_music')
         if self.main_list.currentItem() == None:
             print('请选择要试听的歌曲')
+            self.show_condition('请选择要试听的歌曲')
             return None
 
         # 清空目录
@@ -258,21 +259,49 @@ class SearchBox(QMainWindow):
         for file in os.listdir(del_path):
             os.remove(os.path.join(del_path,file))
 
-        print(self.musiclist[self.main_list.currentRow()])
         download_url = get_music_download_url(self.musiclist[self.main_list.currentRow()][0])
         path = os.path.join('try_music',self.musiclist[self.main_list.currentRow()][1])
-        print(download_url,path)
-        download_music(download_url,path)
 
-        # 播放音乐
+        # 开始下载并播放
+        self.show_condition('正在下载试听文件...')
+        download_music(download_url, path)
+
+        # 停止上一个试听
         try:
-            self.sound.stop() # 停止上一个试听
+            self.sound.stop()
         except:
             pass
-        self.sound = playsound3.playsound(path + '.mp3',block=False)
+
+        while not os.path.exists(path + '.mp3'):
+            time.sleep(0.5)
+        self.show_condition('下载成功,正在试听')
+        self.sound = playsound3.playsound(path + '.mp3', block=False)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = SearchBox('so far away')
+    window = SearchBox('我爱你但是我要回家')
     window.show()
     sys.exit(app.exec())
+
+
+'''
+        def download_thread():
+            self.show_condition('正在下载试听文件...')
+            download_music(download_url,path)
+        threading.Thread(target = download_thread).start() # 下载放在线程里，防止无响应
+
+        # 停止上一个试听
+        try:
+            self.sound.stop()
+        except:
+            pass
+
+        # 等待下载完成并播放(线程)
+        def wait_and_play_thread():
+            while not os.path.exists(path + '.mp3'):
+                time.sleep(0.5)
+            self.show_condition('下载成功,正在试听')
+            self.sound = playsound3.playsound(path + '.mp3',block=False)
+        threading.Thread(target = wait_and_play_thread).start()
+'''
