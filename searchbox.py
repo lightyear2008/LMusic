@@ -28,8 +28,9 @@ class SearchBox(QMainWindow):
         self.show()
         # 把加载放在线程里，防止无响应
         def first_search():
+            self.show_condition('正在搜索...')
             self.search()
-        threading.Thread(target = first_search()).start()
+        threading.Thread(target = first_search).start()
 
     def initUI(self):
         print('initUI')

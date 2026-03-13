@@ -1,0 +1,45 @@
+2026-01-06 09:17:47 - ERROR - climber.py - get_music_url_list - 50 - 找不到网页，错误码：404
+2026-01-06 09:17:48 - ERROR - climber.py - get_music_url_list - 50 - 找不到网页，错误码：404
+2026-01-06 09:23:29 - WARNING - climber.py - download_music - 139 - ('无法下载 MP3 文件，状态码：', 403)
+2026-01-06 12:43:07 - WARNING - climber.py - download_music - 139 - ('无法下载 MP3 文件，状态码：', 403)
+2026-01-13 12:44:16 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-13 12:52:46 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-13 13:10:27 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-13 13:10:36 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-13 13:14:12 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-13 13:17:09 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-13 13:22:50 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-13 13:23:12 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-13 13:23:50 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-14 09:10:22 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-14 09:15:33 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-14 09:15:59 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-14 09:16:14 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-14 09:29:52 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-14 12:30:15 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-14 12:30:21 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-14 12:53:14 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-14 13:19:27 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-21 19:24:19 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-01-29 17:03:03 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-03-04 12:35:21 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-03-06 12:35:33 - WARNING - climber.py - download_music - 164 - ('无法下载 MP3 文件，状态码：', 403)
+2026-03-06 12:46:07 - ERROR - climber.py - get_music_url_list - 48 - 网关错误，错误码：502
+2026-03-06 12:48:16 - ERROR - climber.py - get_music_download_url - 138 - get_music_download_url中url获取超时
+2026-03-06 13:11:45 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-03-09 09:10:42 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-03-09 09:25:18 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-03-09 09:25:25 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-03-09 09:25:49 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-03-09 09:26:01 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-03-09 09:29:10 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-03-09 12:54:56 - WARNING - climber.py - download_music - 164 - ('无法下载 MP3 文件,状态码:', 403)
+2026-03-09 12:55:03 - WARNING - climber.py - download_music - 164 - ('无法下载 MP3 文件,状态码:', 403)
+2026-03-09 12:55:07 - WARNING - climber.py - download_music - 164 - ('无法下载 MP3 文件,状态码:', 403)
+2026-03-09 12:55:47 - WARNING - climber.py - download_music - 164 - ('无法下载 MP3 文件,状态码:', 403)
+2026-03-09 12:56:08 - WARNING - climber.py - download_music - 164 - ('无法下载 MP3 文件,状态码:', 403)
+2026-03-09 12:56:11 - WARNING - climber.py - download_music - 164 - ('无法下载 MP3 文件,状态码:', 403)
+2026-03-10 09:13:01 - ERROR - climber.py - get_music_download_url - 145 - get_music_download_url中url获取超时
+2026-03-10 09:16:35 - ERROR - climber.py - get_music_download_url - 145 - get_music_download_url中url获取超时
+2026-03-10 09:19:47 - ERROR - climber.py - get_music_download_url - 145 - get_music_download_url中url获取超时
+2026-03-12 12:51:38 - ERROR - climber.py - get_music_download_url - 145 - get_music_download_url中url获取超时

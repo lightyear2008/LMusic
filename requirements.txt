@@ -1,3 +1,4 @@
+altgraph==0.17.5
 attrs==25.4.0
 beautifulsoup4==4.14.3
 certifi==2025.11.12
@@ -7,13 +8,18 @@ exceptiongroup==1.3.1
 h11==0.16.0
 idna==3.11
 outcome==1.3.0.post0
+packaging==26.0
+pefile==2024.8.26
 playsound3==3.3.1
 pycparser==2.23
+pyinstaller==6.19.0
+pyinstaller-hooks-contrib==2026.3
 PyQt5==5.15.11
 PyQt5-Qt5==5.15.2
 PyQt5_sip==12.17.2
 PySocks==1.7.1
 pywin32==311
+pywin32-ctypes==0.2.3
 requests==2.32.5
 selenium==4.39.0
 sniffio==1.3.1
