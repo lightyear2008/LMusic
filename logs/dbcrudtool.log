@@ -1,0 +1,10 @@
+2026-03-18 09:25:20 - WARNING - dbcrudtool2.py - add - 50 - add中文件已存在: test in mp3_db\main_db.txt
+2026-03-18 09:30:32 - WARNING - dbcrudtool2.py - check_time - 120 - check_time中文件不存在: testa not in mp3_db\main_db.txt
+2026-03-19 09:13:50 - WARNING - dbcrudtool2.py - add - 50 - add中文件已存在: test2 in mp3_db\main_db.txt
+2026-03-19 09:24:49 - WARNING - dbcrudtool2.py - add_time - 98 - add_time中文件不存在: test1 not in mp3_db\main_db.txt
+2026-03-19 12:26:05 - WARNING - dbcrudtool2.py - add_list - 136 - 歌单已存在: list3 at mp3_db\my_lists\list3.txt
+2026-03-19 12:29:09 - WARNING - dbcrudtool2.py - add_list - 141 - 歌单已存在: list3 at mp3_db\my_lists\list3.txt
+2026-03-19 12:29:09 - WARNING - dbcrudtool2.py - wrapper - 35 - 歌单不存在: list1aa at mp3_db\my_lists\list1aa.txt
+2026-03-19 12:29:47 - WARNING - dbcrudtool2.py - wrapper - 35 - 歌单不存在: list4 at mp3_db\my_lists\list4.txt
+2026-03-19 12:30:22 - WARNING - dbcrudtool2.py - wrapper - 34 - 歌单不存在: list4 at mp3_db\my_lists\list4.txt
+2026-03-19 12:34:12 - WARNING - dbcrudtool2.py - delete_list - 152 - 歌单不存在: list3 at mp3_db\my_lists\list3.txt

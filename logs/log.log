@@ -43,3 +43,5 @@
 2026-03-10 09:16:35 - ERROR - climber.py - get_music_download_url - 145 - get_music_download_url中url获取超时
 2026-03-10 09:19:47 - ERROR - climber.py - get_music_download_url - 145 - get_music_download_url中url获取超时
 2026-03-12 12:51:38 - ERROR - climber.py - get_music_download_url - 145 - get_music_download_url中url获取超时
+2026-03-13 12:50:22 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-03-16 09:12:25 - ERROR - climber.py - get_music_download_url - 145 - get_music_download_url中url获取超时
