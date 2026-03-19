@@ -10,34 +10,36 @@ external_directory = os.path.abspath(os.path.join(current_directory, '..'))
 sys.path.append(external_directory)
 
 from searchbox import SearchBox
+from dbcrudtool2 import check
 
 class now_playing_list:
     def __init__(self):
         config = configparser.ConfigParser()
         config.read('config.ini')
-        self.current_list = config['now_playing_message']['now_list']
+        self.current_list_name = config['now_playing_message']['now_list']
+        self.current_list = list(check(str(self.current_list_name).split("'")[1]).keys())
+        print(self.current_list)
 
     def npl_initUI(self):
-        self.top_label = QLabel('list_name')
+        self.top_label = QLabel(self.current_list_name.split("'")[1])
         self.switch_button = QPushButton('切换')
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setFixedHeight(500)
         self.scroll_list = QWidget()
-        self.scroll_list.adjustSize()
         self.scroll_layout = QVBoxLayout(self.scroll_list)
         # add something...
-        for n in range(10):
-            print('add')
-            l = QLabel('s')
-            l.setStyleSheet('QLabel {color:red;}')
+        for n in self.current_list:
+            l = QLabel(n)
+            l.setStyleSheet('QLabel {color:lightblue;}')
             self.scroll_layout.addWidget(l)
         # end
+        self.scroll_list.adjustSize()
         self.scroll_area.setWidget(self.scroll_list)
 
     def npl_init_layout(self):
         self.npl_container = QWidget()  # 给它写CSS
-        main_layout = QHBoxLayout(self.npl_container)
+        main_layout = QVBoxLayout(self.npl_container)
 
         # 1('当前列表名'标签 切换列表按钮)的横向布局
         top_layout = QHBoxLayout()
@@ -54,18 +56,20 @@ class now_playing_list:
         self.top_label.setStyleSheet('''
                 QLabel {
                     color: red;
+                    font-size: 35px;
                 }
                 ''')
         self.switch_button.setStyleSheet('''
                 QPushButton {
                     background-color: blue;
                     color: white;
-                    border: 1px solid black;
+                    border: 1px solid white;
+                    border-radius: 10px;
+                    font-size: 25px;
+                    min_height: 80px;
                 }
-                ''')
-        self.scroll_list.setStyleSheet('''
-                QWidget {
-                    min-height: 300px;
+                QPushButton:hover {
+                    background-color: #5DADE2;
                 }
                 ''')
 

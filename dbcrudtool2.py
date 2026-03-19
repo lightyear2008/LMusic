@@ -159,15 +159,11 @@ def check_lists():
             lists.append(file_name.split('.')[0])
     return lists
 
-
-# 调试区
-print(check_time_sum('main'))
-print(check('main'))
-print(check('list1'))
-print(check('list2'))
-print(check_time('main','test'))
-print(check_lists())
-
+if __name__ == '__main__':
+    # 调试区
+    print(check('main'))
+    print(check('list1'))
+    print(check('list2'))
 
 
 'Shift+F10'

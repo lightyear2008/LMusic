@@ -8,7 +8,7 @@ import threading
 import configparser
 import playsound3
 from climber import *
-from dbcrudtool import add
+from dbcrudtool2 import add
 
 class SearchBox(QMainWindow):
     def __init__(self,ORIGIN_SEARCH_PURPOSE):

@@ -1,4 +1,5 @@
 import base64
+import json
 import os
 import ast
 import configparser
@@ -13,6 +14,12 @@ def base64_to_string(base64_string):
     original_string = byte_data.decode('utf-8')
 
     return original_string
+
+def string_to_json(input_string):
+    return json.loads(input_string)
+
+def json_to_string(json_object):
+    return json.dumps(json_object, ensure_ascii=False)
 
 def add(target_file,music_name):
     # 确定文件路径
@@ -109,10 +116,35 @@ def show(target_file):
     print(music_list)
     return music_list
 
+def base64_and_save(target_file,str):
+    # 确定文件路径
+    if target_file == 'main':
+        file_path = os.path.join('mp3_db', 'main_db.txt')
+    else:
+        file_path = os.path.join('mp3_db', 'my_lists', target_file)
+
+    with open(file_path,'w',encoding='utf-8') as f:
+        f.write(string_to_base64(str))
+
+def add2(target_file,music_name,play_times):
+    # 确定文件路径
+    if target_file == 'main':
+        file_path = os.path.join('mp3_db', 'main_db.txt')
+    else:
+        file_path = os.path.join('mp3_db', 'my_lists', target_file)
+
+    # 读取文件内容
+    with open(file_path,'r',encoding='utf-8') as f:
+        print(base64_to_string(f.read()))
+
+
 if __name__ == '__main__':
-    show('main')
-    show('list1.txt')
-    show('list2.txt')
+    print(string_to_base64('{}'))
+    #base64_and_save('main',string_to_json("{}"))
+    #add2('main',"v",30)
 
+    #show('main')
+    #show('list1.txt')
+    #show('list2.txt')
 
-    print([n.split('.')[0] for n in os.listdir(os.path.join('mp3_db','my_lists'))])
+    #print([n.split('.')[0] for n in os.listdir(os.path.join('mp3_db','my_lists'))])
