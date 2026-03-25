@@ -10,7 +10,8 @@ import playsound3
 from climber import *
 from dbcrudtool2 import add
 
-class SearchBox(QMainWindow):
+
+class SearchBox(QMainWindow,):
     def __init__(self,ORIGIN_SEARCH_PURPOSE):
         super().__init__()
 
@@ -26,9 +27,12 @@ class SearchBox(QMainWindow):
         self.init_layout()
         self.init_CSS()
         self.show()
-        # 首次搜索 这块就很离谱,用线程就炸
+        # 首次搜索
         self.show_condition('正在搜索...')
-        self.search()
+        def first_search_thread():
+            time.sleep(0.2) # 我真的不理解... 为啥加这个就好了
+            self.search()
+        threading.Thread(target=first_search_thread).start()
 
     def initUI(self):
         print('initUI')
@@ -235,6 +239,8 @@ class SearchBox(QMainWindow):
             if status_code == 200:
                 self.show_condition('下载成功')
                 add('main',self.musiclist[self.main_list.currentRow()][1])
+                from pages import now_playing_list
+                now_playing_list.npl_initUI(self)
             else:
                 self.show_condition(str('下载失败，状态码：' + str(status_code)))
 

@@ -18,7 +18,6 @@ class now_playing_list:
         config.read('config.ini')
         self.current_list_name = config['now_playing_message']['now_list']
         self.current_list = list(check(str(self.current_list_name).split("'")[1]).keys())
-        print(self.current_list)
 
     def npl_initUI(self):
         self.top_label = QLabel(self.current_list_name.split("'")[1])
@@ -72,6 +71,11 @@ class now_playing_list:
                     background-color: #5DADE2;
                 }
                 ''')
+
+    def update(self):
+        self.npl_initUI()
+        self.npl_init_layout()
+        self.npl_init_CSS_dark()
 
 
 class Main_Page(now_playing_list):
@@ -155,6 +159,8 @@ class Main_Page(now_playing_list):
         # 这里之前用的线程,跑不了,显示'进程已结束，退出代码为 -1073741819 (0xC0000005)'
         self.search_window = SearchBox(self.searchbox.text())
         self.search_window.show()
+        #self.search_window.destroyed.connect(lambda :print('search_window已关闭'))
+        now_playing_list.update(self)
 
     def init_CSS_DARK_main(self):
         self.searchbox.setStyleSheet('''
