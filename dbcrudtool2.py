@@ -153,7 +153,7 @@ def delete_list(file_name):
         return '歌单不存在'
 
 def check_lists():
-    lists = []
+    lists = ['main']
     for file_name in os.listdir(os.path.join('mp3_db', 'my_lists')):
         if file_name.endswith('.txt'):
             lists.append(file_name.split('.')[0])
@@ -164,6 +164,7 @@ if __name__ == '__main__':
     print(check('main'))
     print(check('list1'))
     print(check('list2'))
+    print(check_lists())
 
 
 'Shift+F10'

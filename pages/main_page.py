@@ -14,6 +14,7 @@ from dbcrudtool2 import check
 
 class now_playing_list:
     def __init__(self):
+        super().__init__()
         config = configparser.ConfigParser()
         config.read('config.ini')
         self.current_list_name = config['now_playing_message']['now_list']
@@ -21,7 +22,6 @@ class now_playing_list:
 
     def npl_initUI(self):
         self.top_label = QLabel(self.current_list_name.split("'")[1])
-        self.switch_button = QPushButton('切换')
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setFixedHeight(500)
@@ -45,7 +45,7 @@ class now_playing_list:
         # 1.1'当前列表名'标签
         top_layout.addWidget(self.top_label)
         # 1.2切换列表按钮
-        top_layout.addWidget(self.switch_button)
+        #top_layout.addWidget(self.switch_button)
         main_layout.addLayout(top_layout)
 
         # 2可滚动列表
@@ -58,19 +58,6 @@ class now_playing_list:
                     font-size: 35px;
                 }
                 ''')
-        self.switch_button.setStyleSheet('''
-                QPushButton {
-                    background-color: blue;
-                    color: white;
-                    border: 1px solid white;
-                    border-radius: 10px;
-                    font-size: 25px;
-                    min_height: 80px;
-                }
-                QPushButton:hover {
-                    background-color: #5DADE2;
-                }
-                ''')
 
     def update(self):
         self.npl_initUI()
@@ -78,7 +65,120 @@ class now_playing_list:
         self.npl_init_CSS_dark()
 
 
-class Main_Page(now_playing_list):
+class musiclist:
+    def __init__(self):
+        super().__init__()
+
+        # 读取ini中的push_list_name 生成self.show_list
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.push_list = config['push_list']['push_list_name']
+        self.show_list = list(check(self.push_list).keys())
+
+    def ml_initUI(self):
+        self.top_label_ml = QLabel('歌单')
+        self.switch_button = QPushButton('切换')
+        self.switch_button.clicked.connect(self.switch_list)
+        self.edit_button = QPushButton('编辑歌单')
+        self.push_button = QPushButton('push')
+
+        # 歌单列表
+        self.push_scroll_area = QScrollArea()
+        self.push_scroll_area.setFixedHeight(500)
+        self.push_scroll_list = QWidget()
+        self.push_scroll_layout = QVBoxLayout(self.push_scroll_list)
+        # 遍历self.show_list填充滚动区域
+        for n in self.show_list:
+            l = QLabel(n)
+            l.setStyleSheet('QLabel {color:lightblue;}')
+            self.push_scroll_layout.addWidget(l)
+        # end
+        self.push_scroll_list.adjustSize()
+        self.push_scroll_area.setWidget(self.push_scroll_list)
+
+    def ml_init_layout(self):
+        self.ml_container = QWidget()
+        main_layout = QVBoxLayout(self.ml_container)
+
+        top_layout = QHBoxLayout()
+        top_layout.addWidget(self.top_label_ml,stretch=2)
+        top_layout.addWidget(self.switch_button,stretch=1)
+        top_layout.addWidget(self.edit_button,stretch=1)
+        top_layout.addWidget(self.push_button,stretch=1)
+        main_layout.addLayout(top_layout)
+
+        main_layout.addWidget(self.push_scroll_area)
+
+    def ml_init_CSS_dark(self):
+        self.top_label_ml.setStyleSheet('''
+                QLabel {
+                    color: red;
+                    font-size: 35px;
+                }
+                ''')
+        self.switch_button.setStyleSheet('''
+                QPushButton {
+                    background-color: blue;
+                    color: white;
+                    border: none;
+                    border-radius: 20px;
+                    font-size: 23px;
+                    font-weight: 500;
+                    min-height: 40px;
+                    min-width: 40px;
+                }
+                QPushButton:hover {
+                    background-color: darkblue;
+                }
+                QPushButton:pressed {
+                    border: 5px groove;
+                    padding: 6px 5px 4px 5px;
+                }
+                ''')
+        self.edit_button.setStyleSheet('''
+                QPushButton {
+                    background-color: blue;
+                    color: white;
+                    border: none;
+                    border-radius: 20px;
+                    font-size: 21px;
+                    font-weight: 500;
+                    min-height: 40px;
+                    min-width: 40px;
+                }
+                QPushButton:hover {
+                    background-color: darkblue;
+                }
+                QPushButton:pressed {
+                    border: 5px groove;
+                    padding: 6px 5px 4px 5px;
+                }
+                ''')
+        self.push_button.setStyleSheet('''
+                QPushButton {
+                    background-color: red;
+                    color: white;
+                    border: none;
+                    border-radius: 20px;
+                    font-size: 23px;
+                    font-weight: 500;
+                    min-height: 40px;
+                    min-width: 40px;
+                }
+                QPushButton:hover {
+                    background-color: #8B0000;
+                }
+                QPushButton:pressed {
+                    border: 5px groove;
+                    padding: 6px 5px 4px 5px;
+                }
+                ''')
+
+    def switch_list(self):
+        pass
+
+
+class Main_Page(now_playing_list,musiclist):
     def __init__(self):
         super().__init__()
 
@@ -89,6 +189,8 @@ class Main_Page(now_playing_list):
         self.search_button.clicked.connect(self.search)
 
         now_playing_list.npl_initUI(self)
+
+        musiclist.ml_initUI(self)
 
         self.tiny_player_button = QPushButton('打开微型播放器')
 
@@ -114,20 +216,17 @@ class Main_Page(now_playing_list):
         search_layout.addSpacing(20)
         self.page_main.addLayout(search_layout)
 
-        # 2.主布局第二行横向布局,包括(当前播放列表 主页播放器 (打开微型播放器 音量)竖直布局)
+        # 2.主布局第二行横向布局,包括(当前播放列表 歌单 (打开微型播放器 音量)竖直布局)
         self.second_layout = QHBoxLayout()
         self.second_layout.setSpacing(15)
         def set_second_layout():
+            #2.1 当前播放列表
             now_playing_list.npl_init_layout(self)
             self.second_layout.addWidget(self.npl_container,stretch=1)
 
-            #2.2 主页播放器
-            self.musicplayer_container = QWidget()
-            self.musicplayer_layout = QHBoxLayout(self.musicplayer_container)
-            def set_musicplayer():
-                pass
-            set_musicplayer()
-            self.second_layout.addWidget(self.musicplayer_container,stretch=1)
+            #2.2 歌单
+            musiclist.ml_init_layout(self)
+            self.second_layout.addWidget(self.ml_container, stretch=1)
 
             #2.3 (打开微型播放器 音量)竖直布局
             self.open_button_and_volume_layout = QVBoxLayout()
@@ -187,11 +286,9 @@ class Main_Page(now_playing_list):
                     }
                     QPushButton:pressed {
                         background-color: #4584FF;
-                        border: 5px inset #4584FF;
+                        border: 5px groove #0f172a;
                     }
                 ''')
-
-
         self.npl_container.setStyleSheet('''
                 QWidget {
                     border-radius: 15px;
@@ -200,9 +297,10 @@ class Main_Page(now_playing_list):
                 ''')
         now_playing_list.npl_init_CSS_dark(self)
 
-        self.musicplayer_container.setStyleSheet('''
+        self.ml_container.setStyleSheet('''
                 QWidget {
                     border-radius: 15px;
                     background: #000000;
-                }
+                }  
                 ''')
+        musiclist.ml_init_CSS_dark(self)
