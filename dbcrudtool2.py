@@ -81,6 +81,16 @@ def delete(file_path, music_name):
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(purpose_data)
 
+def delete_from_db(music_name):
+    try:
+        os.remove(os.path.join('mp3_db', 'main_list', music_name + '.mp3'))
+    except FileNotFoundError:
+        logging.warning(f'delete_from_db中文件不存在: {music_name} at {os.path.join("mp3_db", "main_list", music_name + ".mp3")}')
+        return '文件不存在'
+    except Exception as e:
+        logging.error(f'delete_from_db发生未知错误: {e}')
+        return '发生未知错误'
+
 @path_deal
 def clean(file_path):
     with open(file_path, 'w', encoding='utf-8') as f:
@@ -165,6 +175,10 @@ if __name__ == '__main__':
     print(check('list1'))
     print(check('list2'))
     print(check_lists())
+    add('main', 'song1')
+    add('list1', 'song1')
+    add('list1', 'song2')
+    add('list2', 'song1')
 
 
 'Shift+F10'

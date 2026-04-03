@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
-                             QLineEdit, QScrollArea, QSlider)
+                             QLineEdit, QScrollArea, QSlider, QDialog)
 import sys
 import os
 import configparser
@@ -11,6 +11,8 @@ sys.path.append(external_directory)
 
 from searchbox import SearchBox
 from dbcrudtool2 import check
+from switch_window import SwitchListDialog
+from edit_window import EditWindow
 
 class now_playing_list:
     def __init__(self):
@@ -69,17 +71,18 @@ class musiclist:
     def __init__(self):
         super().__init__()
 
-        # 读取ini中的push_list_name 生成self.show_list
+        # 读取ini中的push_list_name生成self.show_list
         config = configparser.ConfigParser()
         config.read('config.ini')
-        self.push_list = config['push_list']['push_list_name']
-        self.show_list = list(check(self.push_list).keys())
+        self.push_list_name = config['push_list']['push_list_name']
+        self.show_list = list(check(self.push_list_name).keys())
 
     def ml_initUI(self):
         self.top_label_ml = QLabel('歌单')
         self.switch_button = QPushButton('切换')
         self.switch_button.clicked.connect(self.switch_list)
         self.edit_button = QPushButton('编辑歌单')
+        self.edit_button.clicked.connect(self.edit_list)
         self.push_button = QPushButton('push')
 
         # 歌单列表
@@ -175,7 +178,50 @@ class musiclist:
                 ''')
 
     def switch_list(self):
-        pass
+        dialog = SwitchListDialog(self.push_list_name, self.ml_container.parent())
+        if dialog.exec_() == QDialog.Accepted:
+            # 用户点击了确认，更新配置
+            new_list_name = dialog.selected_list
+            if new_list_name and new_list_name != self.push_list_name:
+                # 更新配置文件
+                config = configparser.ConfigParser()
+                config.read('config.ini')
+                config['push_list']['push_list_name'] = new_list_name
+                with open('config.ini', 'w') as f:
+                    config.write(f)
+                # 更新显示
+                def update():
+                    # 重新加载数据
+                    config = configparser.ConfigParser()
+                    config.read('config.ini')
+                    self.push_list_name = config['push_list']['push_list_name']
+                    self.show_list = list(check(self.push_list_name).keys())
+
+                    # 重新创建整个内容区域
+                    # 删除旧的内容
+                    if self.push_scroll_list:
+                        self.push_scroll_list.deleteLater()
+
+                    # 创建新的内容部件
+                    self.push_scroll_list = QWidget()
+                    self.push_scroll_layout = QVBoxLayout(self.push_scroll_list)
+
+                    # 添加内容
+                    for n in self.show_list:
+                        l = QLabel(n)
+                        l.setStyleSheet('QLabel {color:lightblue;}')
+                        self.push_scroll_layout.addWidget(l)
+
+                    # 添加弹簧
+                    self.push_scroll_layout.addStretch()
+
+                    # 设置到滚动区域
+                    self.push_scroll_area.setWidget(self.push_scroll_list)
+                update()
+
+    def edit_list(self):
+        self.edit_window = EditWindow(self.push_list_name)
+        self.edit_window.show()
 
 
 class Main_Page(now_playing_list,musiclist):

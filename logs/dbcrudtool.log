@@ -20,3 +20,12 @@
 2026-03-30 13:14:43 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: all at mp3_db\my_lists\all.txt
 2026-03-31 09:15:40 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: all at mp3_db\my_lists\all.txt
 2026-03-31 09:16:55 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: all at mp3_db\my_lists\all.txt
+2026-04-01 13:14:31 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: maina at mp3_db\my_lists\maina.txt
+2026-04-02 09:11:00 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: mafin at mp3_db\my_lists\mafin.txt
+2026-04-02 09:13:03 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: mainf at mp3_db\my_lists\mainf.txt
+2026-04-02 09:14:18 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: mafin at mp3_db\my_lists\mafin.txt
+2026-04-03 12:45:56 - WARNING - dbcrudtool2.py - delete_from_db - 88 - delete_from_db中文件不存在: song1 at mp3_db\main_list\song1.mp3
+2026-04-03 12:59:17 - WARNING - dbcrudtool2.py - add - 54 - add中文件已存在: 蝶 in mp3_db\my_lists\list1.txt
+2026-04-03 13:01:55 - WARNING - dbcrudtool2.py - add - 54 - add中文件已存在: 蝶 in mp3_db\my_lists\list1.txt
+2026-04-03 13:02:59 - WARNING - dbcrudtool2.py - add - 54 - add中文件已存在: So Far Away (TV Noise Remix) in mp3_db\my_lists\list2.txt
+2026-04-03 13:04:00 - WARNING - dbcrudtool2.py - add - 54 - add中文件已存在: So Far Away (TV Noise Remix) in mp3_db\my_lists\list2.txt
