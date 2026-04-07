@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QPushButton,
+from PyQt5.QtWidgets import (QDialog, QApplication, QPushButton,
                              QVBoxLayout, QHBoxLayout, QWidget, QListWidget,
-                             QListWidgetItem, QLabel, QDialog)
+                             QListWidgetItem, QLabel)
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5 import QtCore
 
@@ -184,11 +184,11 @@ class MessageDialog(QDialog):
             return None
 
 
-class EditWindow(QMainWindow):
-    def __init__(self, origin_path):
-        super().__init__()
+class EditDialog(QDialog):
+    def __init__(self, origin_path, parent=None):
+        super().__init__(parent)
 
-        def init_window():
+        def init_dialog():
             # 设置窗口标题
             self.setWindowTitle('歌单管理')
 
@@ -202,8 +202,11 @@ class EditWindow(QMainWindow):
             window_height = int(screen_height / 1.5)
 
             # 设置窗口大小
-            self.setGeometry(0, 0, window_width, window_height)
+            self.resize(window_width, window_height)
             self.setMinimumSize(window_width, window_height)
+
+            # 设置窗口标志
+            self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.WindowCloseButtonHint)
 
             # 设置主窗口背景色
             palette = QPalette()
@@ -217,7 +220,8 @@ class EditWindow(QMainWindow):
             screen = QApplication.desktop().screenGeometry()
             size = self.geometry()
             self.move((screen.width() - size.width()) // 2, (screen.height() - size.height()) // 2)
-        init_window()
+
+        init_dialog()
 
         self.origin_path = origin_path
         self.origin_dict = check(self.origin_path)
@@ -242,7 +246,6 @@ class EditWindow(QMainWindow):
 
         # 连接删除按钮的点击事件
         self.delete_button.clicked.connect(self.delete_selected_playlist)
-        # 连接移动按钮的点击事件（暂不实现功能）
         self.move_button.clicked.connect(self.move_playlist)
 
     def init_layout(self):
@@ -280,7 +283,7 @@ class EditWindow(QMainWindow):
 
         central_widget = QWidget()
         central_widget.setLayout(main_layout)
-        self.setCentralWidget(central_widget)
+        self.setLayout(main_layout)
 
     def update_list(self):
         """刷新整个滚动区域"""
@@ -295,7 +298,7 @@ class EditWindow(QMainWindow):
         for playlist_name in playlists:
             # 创建标签显示歌曲名称
             label = QLabel(playlist_name)
-            label.setStyleSheet("""
+            label.setStyleSheet('''
                 QLabel {
                     color: white;
                     font-size: 22px;
@@ -303,7 +306,7 @@ class EditWindow(QMainWindow):
                     font-weight: bold;
                     padding-left: 15px;
                 }
-            """)
+            ''')
 
             # 创建列表项
             list_item = QListWidgetItem(self.list_widget)
@@ -354,12 +357,15 @@ class EditWindow(QMainWindow):
             if label_widget:
                 playlist_name = label_widget.text()
                 # 让用户选择目标歌单
-                dialog = SwitchListDialog(self.origin_path)
+                dialog = SwitchListDialog(self.origin_path,self)
                 if dialog.exec_() == QDialog.Accepted:
                     if dialog.selected_list != self.origin_path: # 确保目标歌单与当前歌单不同
                         if playlist_name in check(dialog.selected_list):
                             MessageDialog.show_message('此歌曲已在此歌单中', title='提示', parent=self)
-                        add(dialog.selected_list, playlist_name) # 添加到目标歌单
+                        else:
+                            add(dialog.selected_list, playlist_name)  # 添加到目标歌单
+                            MessageDialog.show_message(f'歌曲已成功移动到 {dialog.selected_list}', title='成功',
+                                                       parent=self)
                     else:
                         MessageDialog.show_message('目标歌单与当前歌单相同，请选择不同的歌单', title='提示', parent=self)
                         self.move_playlist() # 递归重选
@@ -403,7 +409,7 @@ class EditWindow(QMainWindow):
             }
         ''')
 
-        # 页脚按钮样式
+        # 页脚按钮样式 - 移动按钮
         self.move_button.setStyleSheet('''
             QPushButton {
                 background-color: #4CAF50;
@@ -423,6 +429,7 @@ class EditWindow(QMainWindow):
             }
         ''')
 
+        # 页脚按钮样式 - 删除按钮
         self.delete_button.setStyleSheet('''
             QPushButton {
                 background-color: #FF4444;
@@ -449,15 +456,15 @@ class EditWindow(QMainWindow):
                 border-top: 2px solid #4D4D4D;
             }
         """
-        # 获取页脚控件并设置样式（在init_layout中创建，需要在populate之后设置）
-        footer_widget = self.centralWidget().layout().itemAt(2).widget()
+        # 获取页脚控件并设置样式
+        footer_widget = self.layout().itemAt(2).widget()
         if footer_widget:
             footer_widget.setStyleSheet(footer_style)
 
     def read_file(self):
         """点击顶部切换歌单按钮时调用"""
         try:
-            dialog = SwitchListDialog(self.origin_path)
+            dialog = SwitchListDialog(self.origin_path, self)
             if dialog.exec_() == QDialog.Accepted:
                 print(f"用户选择了歌单: {dialog.selected_list}")
                 self.origin_path = dialog.selected_list
@@ -465,14 +472,12 @@ class EditWindow(QMainWindow):
                 self.update_list()  # 刷新列表显示新的歌单数据
             else:
                 print("用户取消了选择")
-            print(self.origin_path)
-            print(check(self.origin_path))
         except Exception as e:
-            MessageDialog.show_message("读取歌单失败", title="错误", parent=self)
+            MessageDialog.show_message(f"读取歌单失败: {str(e)}", title="错误", parent=self)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = EditWindow('main')
-    window.show()
+    dialog = EditDialog('main')
+    dialog.exec_()  # 使用 exec_() 显示模态对话框
     sys.exit(app.exec_())

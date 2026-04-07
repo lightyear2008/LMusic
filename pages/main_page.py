@@ -12,7 +12,7 @@ sys.path.append(external_directory)
 from searchbox import SearchBox
 from dbcrudtool2 import check
 from switch_window import SwitchListDialog
-from edit_window import EditWindow
+from edit_window import EditDialog
 
 class now_playing_list:
     def __init__(self):
@@ -220,8 +220,36 @@ class musiclist:
                 update()
 
     def edit_list(self):
-        self.edit_window = EditWindow(self.push_list_name)
-        self.edit_window.show()
+        dialog = EditDialog(self.push_list_name)
+        if dialog.exec_() != QDialog.Accepted:
+            def update():
+                # 重新加载数据
+                config = configparser.ConfigParser()
+                config.read('config.ini')
+                self.push_list_name = config['push_list']['push_list_name']
+                self.show_list = list(check(self.push_list_name).keys())
+
+                # 重新创建整个内容区域
+                # 删除旧的内容
+                if self.push_scroll_list:
+                    self.push_scroll_list.deleteLater()
+
+                # 创建新的内容部件
+                self.push_scroll_list = QWidget()
+                self.push_scroll_layout = QVBoxLayout(self.push_scroll_list)
+
+                # 添加内容
+                for n in self.show_list:
+                    l = QLabel(n)
+                    l.setStyleSheet('QLabel {color:lightblue;}')
+                    self.push_scroll_layout.addWidget(l)
+
+                # 添加弹簧
+                self.push_scroll_layout.addStretch()
+
+                # 设置到滚动区域
+                self.push_scroll_area.setWidget(self.push_scroll_list)
+            update()
 
 
 class Main_Page(now_playing_list,musiclist):
