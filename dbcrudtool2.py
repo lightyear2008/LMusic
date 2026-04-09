@@ -162,6 +162,22 @@ def delete_list(file_name):
         logging.warning(f'歌单不存在: {file_name} at {file_path}')
         return '歌单不存在'
 
+def rename_list(old_name, new_name):
+    old_file_path = os.path.join('mp3_db', 'my_lists', old_name + '.txt')
+    new_file_path = os.path.join('mp3_db', 'my_lists', new_name + '.txt')
+
+    if not os.path.exists(old_file_path):
+        print('原歌单不存在')
+        logging.warning(f'原歌单不存在: {old_name} at {old_file_path}')
+        return '原歌单不存在'
+    elif os.path.exists(new_file_path):
+        print('新歌单已存在')
+        logging.warning(f'新歌单已存在: {new_name} at {new_file_path}')
+        return '新歌单已存在'
+    else:
+        os.rename(old_file_path, new_file_path)
+        return '重命名成功'
+
 def check_lists():
     lists = ['main']
     for file_name in os.listdir(os.path.join('mp3_db', 'my_lists')):
@@ -175,10 +191,7 @@ if __name__ == '__main__':
     print(check('list1'))
     print(check('list2'))
     print(check_lists())
-    add('main', 'song1')
-    add('list1', 'song1')
-    add('list1', 'song2')
-    add('list2', 'song1')
+    rename_list('list3', 'list2')
 
 
 'Shift+F10'

@@ -1,12 +1,12 @@
 from PyQt5.QtWidgets import (QDialog, QApplication, QPushButton,
                              QVBoxLayout, QHBoxLayout, QWidget, QListWidget,
-                             QListWidgetItem, QLabel)
+                             QListWidgetItem, QLabel, QLineEdit)
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5 import QtCore
 
 import sys
 
-from dbcrudtool2 import check, delete, check_lists, delete_from_db, add
+from dbcrudtool2 import check, delete, check_lists, delete_from_db, add, add_list, delete_list, rename_list
 from switch_window import SwitchListDialog
 
 COLOR_MODE = 'DARK'
@@ -184,6 +184,493 @@ class MessageDialog(QDialog):
             return None
 
 
+class InputDialog(QDialog):
+    """自定义输入框类"""
+
+    def __init__(self, message, title="输入", parent=None, default_text=''):
+        """
+        初始化输入窗口
+        :param message: 提示消息
+        :param title: 窗口标题，默认为"输入"
+        :param parent: 父窗口
+        :param default_text: 默认输入文本
+        """
+        super().__init__(parent)
+        self.message = message
+        self.title = title
+        self.default_text = default_text
+        self.input_value = ''
+        self.init_UI()
+        self.init_layout()
+        self.init_CSS()
+
+    def init_UI(self):
+        """初始化UI"""
+        def init_dialog():
+            # 设置窗口标题
+            self.setWindowTitle(self.title)
+
+            # 设置窗口大小
+            self.setFixedSize(450, 300)
+
+            # 设置窗口标志（使窗口置顶）
+            self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.WindowStaysOnTopHint)
+
+            # 在父窗口居中偏上显示
+            if self.parent():
+                parent_geometry = self.parent().geometry()
+                dialog_geometry = self.geometry()
+                # 计算位置：水平居中，垂直方向向上偏移20%
+                x = parent_geometry.x() + (parent_geometry.width() - dialog_geometry.width()) // 2
+                y = parent_geometry.y() + (parent_geometry.height() - dialog_geometry.height()) // 3
+                self.move(x, y)
+            else:
+                # 如果没有父窗口，在屏幕中央偏上显示
+                screen = QApplication.desktop().screenGeometry()
+                dialog_geometry = self.geometry()
+                x = (screen.width() - dialog_geometry.width()) // 2
+                y = (screen.height() - dialog_geometry.height()) // 3
+                self.move(x, y)
+        init_dialog()
+
+        # 提示消息标签
+        self.message_label = QLabel(self.message)
+        self.message_label.setWordWrap(True)  # 自动换行
+        self.message_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.message_label.setMinimumHeight(60)
+
+        # 输入框
+        self.input_edit = QLineEdit()
+        self.input_edit.setText(self.default_text)
+        self.input_edit.setMinimumHeight(45)
+        self.input_edit.setPlaceholderText("请输入内容...")
+
+        # 设置输入框焦点
+        self.input_edit.setFocus()
+
+        # 按回车键触发确定
+        self.input_edit.returnPressed.connect(self.accept)
+
+        # 确定按钮
+        self.ok_button = QPushButton("确定")
+        self.ok_button.setFixedSize(120, 45)
+        self.ok_button.clicked.connect(self.accept)
+
+        # 取消按钮
+        self.cancel_button = QPushButton("取消")
+        self.cancel_button.setFixedSize(120, 45)
+        self.cancel_button.clicked.connect(self.reject)
+
+    def init_layout(self):
+        # 创建主布局
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(25, 25, 25, 25)
+        main_layout.setSpacing(20)
+
+        # 按钮布局
+        button_layout = QHBoxLayout()
+        button_layout.setSpacing(15)
+
+        # 按钮居中
+        button_layout.addStretch()
+        button_layout.addWidget(self.ok_button)
+        button_layout.addWidget(self.cancel_button)
+        button_layout.addStretch()
+
+        # 添加到主布局
+        main_layout.addWidget(self.message_label)
+        main_layout.addWidget(self.input_edit)
+        main_layout.addLayout(button_layout)
+
+        self.setLayout(main_layout)
+
+    def init_CSS(self):
+        """设置样式"""
+        # 设置窗口背景色
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(43, 45, 48))
+        palette.setColor(QPalette.WindowText, QColor(255, 255, 255))
+        self.setPalette(palette)
+
+        # 设置提示消息标签样式
+        self.message_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 28px;
+                background-color: #2D2D2D;
+                border-radius: 8px;
+                padding: 15px;
+                font-weight: 500;
+            }
+        """)
+
+        # 设置输入框样式
+        self.input_edit.setStyleSheet("""
+            QLineEdit {
+                background-color: #2D2D2D;
+                border: 2px solid #4D4D4D;
+                border-radius: 8px;
+                color: white;
+                font-size: 26px;
+                padding: 10px 15px;
+                selection-background-color: #3574F0;
+            }
+            QLineEdit:focus {
+                border: 2px solid #3574F0;
+            }
+        """)
+
+        # 设置确定按钮样式
+        self.ok_button.setStyleSheet("""
+            QPushButton {
+                background-color: #3574F0;
+                border: none;
+                border-radius: 8px;
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #4A8CF7;
+            }
+            QPushButton:pressed {
+                background-color: #2A5FD0;
+            }
+        """)
+
+        # 设置取消按钮样式
+        self.cancel_button.setStyleSheet("""
+            QPushButton {
+                background-color: #555555;
+                border: none;
+                border-radius: 8px;
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #666666;
+            }
+            QPushButton:pressed {
+                background-color: #444444;
+            }
+        """)
+
+    def get_input_text(self):
+        return self.input_value if self.input_value else ''
+
+    def accept(self):
+        """重写accept方法，保存输入内容"""
+        self.input_value = self.input_edit.text()
+        super().accept()
+
+    @staticmethod
+    def show_input_box(message, title="输入", parent=None, default_text=""):
+        """
+        静态方法：显示输入窗口
+        :param message: 提示消息
+        :param title: 窗口标题
+        :param parent: 父窗口
+        :param default_text: 默认输入文本
+        :return: 如果用户点击确定返回输入的文本，否则返回None
+        """
+        dialog = InputDialog(message, title, parent, default_text)
+        result = dialog.exec_()
+
+        if result == QDialog.Accepted:
+            return dialog.get_input_text()
+        else:
+            return None
+
+
+class EditListsDialog(QDialog):
+    def __init__(self, origin_path, parent=None):
+        super().__init__(parent)
+        self.origin_path = origin_path
+        self.init_UI()
+        self.init_layout()
+        self.init_DARK_CSS()
+        self.update_lists()
+
+    def init_UI(self):
+        def init_dialog():
+            # 设置窗口标题
+            self.setWindowTitle('歌单管理')
+
+            # 获取屏幕的宽度和高度
+            screen = QApplication.desktop().screenGeometry()
+            screen_width = screen.width()
+            screen_height = screen.height()
+
+            # 设置窗口的宽度和高度值
+            window_width = int(screen_width / 4.5)
+            window_height = int(screen_height / 2)
+
+            # 设置窗口大小
+            self.resize(window_width, window_height)
+            self.setMinimumSize(window_width, window_height)
+
+            # 设置窗口标志
+            self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.WindowCloseButtonHint)
+
+            # 设置主窗口背景色
+            palette = QPalette()
+            if COLOR_MODE == 'LIGHT':
+                palette.setColor(QPalette.Window, QColor(255, 255, 255))
+            else:
+                palette.setColor(QPalette.Window, QColor(43, 45, 48))
+            self.setPalette(palette)
+
+            # 窗口居中
+            screen = QApplication.desktop().screenGeometry()
+            size = self.geometry()
+            self.move((screen.width() - size.width()) // 2, (screen.height() - size.height()) // 2)
+        init_dialog()
+
+        self.list_widget = QListWidget()
+        self.list_widget.setSelectionMode(QListWidget.SingleSelection)  # 单选模式
+
+        # 创建底部按钮
+        self.btn_confirm = QPushButton('新增')
+        self.btn_confirm.clicked.connect(self.create_new_list)
+        self.btn_rename = QPushButton('重命名')
+        self.btn_rename.clicked.connect(self.rename_list)
+        self.btn_cancel = QPushButton('删除')
+        self.btn_cancel.clicked.connect(self.delete_list)
+
+    def init_layout(self):
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        # 添加列表控件
+        main_layout.addWidget(self.list_widget, 1)
+
+        # 底部按钮布局
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(20, 15, 20, 15)
+        button_layout.addWidget(self.btn_confirm)
+        button_layout.addWidget(self.btn_rename)
+        button_layout.addWidget(self.btn_cancel)
+
+        bottom_widget = QWidget()
+        bottom_widget.setLayout(button_layout)
+        bottom_widget.setFixedHeight(75)
+        main_layout.addWidget(bottom_widget)
+
+        self.setLayout(main_layout)
+
+    def init_DARK_CSS(self):
+        """初始化样式"""
+        # 列表控件样式
+        self.list_widget.setStyleSheet("""
+                    QListWidget {
+                        background-color: #2D2D2D;
+                        border: none;
+                        outline: none;
+                    }
+                    QListWidget::item {
+                        border-bottom: 2px solid #3D3D3D;
+                        padding: 0px;
+                        min-height: 50px;
+                        color: white;
+                    }
+                    QListWidget::item:hover {
+                        background-color: #3D3D3D;
+                    }
+                    QListWidget::item:selected {
+                        background-color: #3574F0;
+                    }
+                    QScrollBar:vertical {
+                        background-color: #2D2D2D;
+                        width: 12px;
+                        border-radius: 6px;
+                    }
+                    QScrollBar::handle:vertical {
+                        background-color: #555555;
+                        border-radius: 6px;
+                        min-height: 20px;
+                    }
+                    QScrollBar::handle:vertical:hover {
+                        background-color: #666666;
+                    }
+                    QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                        border: none;
+                        background: none;
+                    }
+                    QScrollBar:horizontal {
+                        background-color: #2D2D2D;
+                        height: 12px;
+                        border-radius: 6px;
+                    }
+                    QScrollBar::handle:horizontal {
+                        background-color: #555555;
+                        border-radius: 6px;
+                        min-width: 20px;
+                    }
+                    QScrollBar::handle:horizontal:hover {
+                        background-color: #666666;
+                    }
+                    QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+                        border: none;
+                        background: none;
+                    }
+                """)
+
+        # 底部容器样式
+        bottom_widget = self.layout().itemAt(1).widget()
+        if bottom_widget:
+            bottom_widget.setStyleSheet("""
+                        QWidget {
+                            background-color: #3D3D3D;
+                            border-top: 2px solid #4D4D4D;
+                        }
+                    """)
+
+        # 确定按钮样式
+        self.btn_confirm.setStyleSheet("""
+                    QPushButton {
+                        background-color: #3574F0;
+                        border: none;
+                        border-radius: 8px;
+                        color: white;
+                        font-size: 16px;
+                        font-weight: bold;
+                        padding: 10px 20px;
+                        min-width: 100px;
+                    }
+                    QPushButton:hover {
+                        background-color: #4A8CF7;
+                    }
+                    QPushButton:pressed {
+                        background-color: #2A5FD0;
+                    }
+                """)
+
+        # 重命名按钮样式
+        self.btn_rename.setStyleSheet('''
+                    QPushButton {
+                        background-color: #3574F0;
+                        border: none;
+                        border-radius: 8px;
+                        color: white;
+                        font-size: 16px;
+                        font-weight: bold;
+                        padding: 10px 20px;
+                        min-width: 100px;
+                    }
+                    QPushButton:hover {
+                        background-color: #4A8CF7;
+                    }
+                    QPushButton:pressed {
+                        background-color: #2A5FD0;
+                    }
+                ''')
+
+        # 取消按钮样式
+        self.btn_cancel.setStyleSheet("""
+                    QPushButton {
+                        background-color: #555555;
+                        border: none;
+                        border-radius: 8px;
+                        color: white;
+                        font-size: 16px;
+                        font-weight: bold;
+                        padding: 10px 20px;
+                        min-width: 100px;
+                    }
+                    QPushButton:hover {
+                        background-color: #666666;
+                    }
+                    QPushButton:pressed {
+                        background-color: #444444;
+                    }
+                """)
+
+    def update_lists(self):
+        """加载歌单列表"""
+        self.list_widget.clear()
+        lists = check_lists()
+
+        for list_name in lists:
+            item = QListWidgetItem(list_name)
+            item.setSizeHint(QtCore.QSize(0, 50))  # 设置每项高度
+            self.list_widget.addItem(item)
+
+            # 标记当前歌单
+            if list_name == self.origin_path:
+                # 设置不同样式或添加标记
+                item.setForeground(QColor(76, 175, 80))  # 绿色文字
+
+        # 滚动到当前歌单
+        if self.origin_path in lists:
+            items = self.list_widget.findItems(self.origin_path, QtCore.Qt.MatchExactly)
+            if items:
+                self.list_widget.setCurrentItem(items[0])
+                self.list_widget.scrollToItem(items[0])
+
+    def get_selected_list(self):
+        """获取选中的歌单"""
+        current_item = self.list_widget.currentItem()
+        return current_item.text() if current_item else None
+
+    def create_new_list(self):
+        input_text = InputDialog.show_input_box("请输入新歌单名称:", "创建新歌单", self)
+        if input_text:
+            if input_text in check_lists():
+                MessageDialog.show_message("歌单已存在，请选择其他名称。", "提示", self)
+            else:
+                # 创建新歌单文件
+                add_list(input_text)
+                self.update_lists()
+
+    def delete_list(self):
+        selected_list = self.list_widget.currentItem().text()
+        num_of_musics = len(check(selected_list))
+        if selected_list == 'main':
+            MessageDialog.show_message('主歌单无法删除', title='提示', parent=self)
+        else:
+            # 选择的不是主歌单 允许删除 检查如果歌单不为空则提示确认删除
+            if check(selected_list) != {}:
+                if MessageDialog.show_message(f'此歌单内含{num_of_musics}首歌曲，是否删除?', "提示", self, show_cancel=True):
+                    delete_list(selected_list)
+                    self.update_lists()
+            else:
+                delete_list(selected_list)
+                self.update_lists()
+
+    def rename_list(self):
+        old_name = self.list_widget.currentItem().text()
+        if old_name == 'main':
+            MessageDialog.show_message('主歌单无法重命名', '提示', self)
+            return
+        new_name = InputDialog.show_input_box('请输入新名称:','重命名',self, default_text=old_name)
+        if new_name is None: # 用户关闭窗口
+            return
+        if new_name == 'main':
+            MessageDialog.show_message('名称不可与主歌单重复', '提示', self)
+            self.rename_list()
+            return
+        if old_name == new_name:
+            MessageDialog.show_message('新名称与原名称相同，请重新输入。', '提示', self)
+            self.rename_list()
+            return
+        if new_name == '' or new_name.isspace():
+            MessageDialog.show_message('名称不能为空，请重新输入。', '提示', self)
+            self.rename_list()
+            return
+        message = rename_list(old_name, new_name)
+        if message == '重命名成功':
+            self.update_lists()
+        elif message == '新歌单已存在':
+            MessageDialog.show_message('命名重复，请选择其他名称。', '提示', self)
+            self.rename_list()  # 递归继续重命名
+        elif message == '原歌单不存在':
+            raise Exception(f'EditListsDialog中重命名失败: 原歌单不存在: {old_name}')
+        else:
+            raise Exception(f'EditListsDialog中重命名失败: 未知错误: {message}')
+
+
 class EditDialog(QDialog):
     def __init__(self, origin_path, parent=None):
         super().__init__(parent)
@@ -220,7 +707,6 @@ class EditDialog(QDialog):
             screen = QApplication.desktop().screenGeometry()
             size = self.geometry()
             self.move((screen.width() - size.width()) // 2, (screen.height() - size.height()) // 2)
-
         init_dialog()
 
         self.origin_path = origin_path
@@ -238,6 +724,9 @@ class EditDialog(QDialog):
         self.switch_button = QPushButton('切换歌单,' + f'当前:{self.origin_path}', self)
         self.switch_button.clicked.connect(self.read_file)  # 连接按钮点击事件到读取文件的方法
 
+        self.edit_lists_button = QPushButton('编辑歌单', self)
+        self.edit_lists_button.clicked.connect(self.run_edit_lists_dialog)
+
         self.list_widget = QListWidget()  # 创建列表控件
 
         # 创建页脚按钮
@@ -254,8 +743,12 @@ class EditDialog(QDialog):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # 添加顶部切换按钮
-        main_layout.addWidget(self.switch_button)
+        # 顶部横向布局
+        top_layout = QHBoxLayout()
+        top_layout.addWidget(self.switch_button,stretch=5)
+        top_layout.addSpacing(1)
+        top_layout.addWidget(self.edit_lists_button, stretch=1)
+        main_layout.addLayout(top_layout)
 
         # 添加列表控件
         main_layout.addWidget(self.list_widget)
@@ -287,7 +780,10 @@ class EditDialog(QDialog):
 
     def update_list(self):
         """刷新整个滚动区域"""
-        # 显示当前歌单名称
+        if self.origin_path not in check_lists():  # 如果当前歌单不存在，切换到主歌单
+            self.origin_path = 'main'
+            self.origin_dict = check('main')
+
         self.switch_button.setText('切换歌单,' + f'当前:{self.origin_path}')
         # 清除现有项
         self.list_widget.clear()
@@ -389,6 +885,22 @@ class EditDialog(QDialog):
                 border: 10px groove darkblue;
             }
         ''')
+        self.edit_lists_button.setStyleSheet('''
+            QPushButton {
+                background-color: #3574F0;
+                border: none;
+                font-size: 30px;
+                color: white;
+                min-height: 60px;
+            }
+            QPushButton:hover {
+                background-color: darkblue;
+            }
+            QPushButton:pressed {
+                background-color: darkblue;
+                border: 10px groove darkblue;
+            }
+        ''')
 
         # 列表控件的样式
         self.list_widget.setStyleSheet('''
@@ -474,6 +986,15 @@ class EditDialog(QDialog):
                 print("用户取消了选择")
         except Exception as e:
             MessageDialog.show_message(f"读取歌单失败: {str(e)}", title="错误", parent=self)
+
+    def run_edit_lists_dialog(self):
+        """点击编辑歌单按钮时调用"""
+        try:
+            dialog = EditListsDialog(self.origin_path, self)
+            dialog.destroyed.connect(self.update_list)  # 当编辑歌单窗口关闭时刷新列表
+            dialog.exec_()  # 显示编辑歌单的模态对话框
+        except Exception as e:
+            MessageDialog.show_message(f"打开编辑歌单窗口失败: {str(e)}", title="错误", parent=self)
 
 
 if __name__ == '__main__':

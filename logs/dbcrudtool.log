@@ -29,3 +29,15 @@
 2026-04-03 13:01:55 - WARNING - dbcrudtool2.py - add - 54 - add中文件已存在: 蝶 in mp3_db\my_lists\list1.txt
 2026-04-03 13:02:59 - WARNING - dbcrudtool2.py - add - 54 - add中文件已存在: So Far Away (TV Noise Remix) in mp3_db\my_lists\list2.txt
 2026-04-03 13:04:00 - WARNING - dbcrudtool2.py - add - 54 - add中文件已存在: So Far Away (TV Noise Remix) in mp3_db\my_lists\list2.txt
+2026-04-08 13:02:35 - WARNING - dbcrudtool2.py - add_list - 150 - 歌单已存在: list3 at mp3_db\my_lists\list3.txt
+2026-04-09 09:20:22 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: list2 at mp3_db\my_lists\list2.txt
+2026-04-09 12:39:39 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: list2 at mp3_db\my_lists\list2.txt
+2026-04-09 12:41:10 - WARNING - dbcrudtool2.py - rename_list - 171 - 原歌单不存在: list3 at mp3_db\my_lists\list3.txt
+2026-04-09 12:41:31 - WARNING - dbcrudtool2.py - rename_list - 171 - 原歌单不存在: list4 at mp3_db\my_lists\list4.txt
+2026-04-09 12:41:39 - WARNING - dbcrudtool2.py - rename_list - 175 - 新歌单已存在: list2 at mp3_db\my_lists\list2.txt
+2026-04-09 12:45:13 - WARNING - dbcrudtool2.py - rename_list - 175 - 新歌单已存在: list2 at mp3_db\my_lists\list2.txt
+2026-04-09 12:45:25 - WARNING - dbcrudtool2.py - rename_list - 175 - 新歌单已存在: list3 at mp3_db\my_lists\list3.txt
+2026-04-09 12:47:06 - WARNING - dbcrudtool2.py - rename_list - 175 - 新歌单已存在: list2 at mp3_db\my_lists\list2.txt
+2026-04-09 12:53:33 - WARNING - dbcrudtool2.py - rename_list - 175 - 新歌单已存在: list3 at mp3_db\my_lists\list3.txt
+2026-04-09 12:54:25 - WARNING - dbcrudtool2.py - rename_list - 175 - 新歌单已存在: list2 at mp3_db\my_lists\list2.txt
+2026-04-09 13:02:18 - WARNING - dbcrudtool2.py - rename_list - 175 - 新歌单已存在: list2 at mp3_db\my_lists\list2.txt
