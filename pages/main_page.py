@@ -14,27 +14,122 @@ from dbcrudtool2 import check
 from switch_window import SwitchListDialog
 from edit_window import EditDialog
 
+
+class NowPlayingItemWidget(QWidget):
+    """当前播放列表的每一行控件，包含歌曲名和删除按钮"""
+    def __init__(self, song_name, parent=None):
+        """
+        初始化歌曲项控件
+        :param song_name: 歌曲名称
+        :param parent: 父控件
+        """
+        super().__init__(parent)
+        self.song_name = song_name
+        self.init_ui()
+        self.setup_style()
+
+    def init_ui(self):
+        """初始化UI"""
+        # 创建水平布局
+        layout = QHBoxLayout()
+        layout.setContentsMargins(15, 10, 15, 10)
+        layout.setSpacing(15)
+
+        # 歌曲名标签
+        self.song_label = QLabel(self.song_name)
+        self.song_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+
+        # 删除按钮
+        self.delete_button = QPushButton("删除")
+        self.delete_button.setFixedSize(60, 30)
+        self.delete_button.setCursor(Qt.PointingHandCursor)
+
+        # 将标签和按钮添加到布局
+        layout.addWidget(self.song_label, 1)  # 标签占1份空间
+        layout.addWidget(self.delete_button, 0)  # 按钮固定大小
+
+        self.setLayout(layout)
+
+        # 设置控件最小高度
+        self.setMinimumHeight(50)
+
+    def setup_style(self):
+        """设置样式"""
+        # 歌曲标签样式
+        self.song_label.setStyleSheet("""
+            QLabel {
+                color: lightblue;
+                font-size: 18px;
+                background: transparent;
+                font-weight: 500;
+            }
+        """)
+
+        # 删除按钮样式
+        self.delete_button.setStyleSheet("""
+            QPushButton {
+                background-color: #FF4444;
+                border: none;
+                border-radius: 6px;
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #FF6666;
+            }
+            QPushButton:pressed {
+                background-color: #CC3333;
+            }
+        """)
+
+        # 控件整体样式（悬停效果）
+        self.setStyleSheet("""
+            NowPlayingItemWidget {
+                background-color: transparent;
+                border-bottom: 1px solid #3D3D3D;
+            }
+            NowPlayingItemWidget:hover {
+                background-color: #2D2D2D;
+            }
+        """)
+
+    def get_song_name(self):
+        """获取歌曲名"""
+        return self.song_name
+
+    def set_song_name(self, name):
+        """设置歌曲名"""
+        self.song_name = name
+        self.song_label.setText(name)
+
+    def set_delete_callback(self, callback):
+        """设置删除按钮的回调函数"""
+        self.delete_button.clicked.connect(callback)
+
+
 class now_playing_list:
+    """Main_Page的第二行左边组件"""
     def __init__(self):
         super().__init__()
         config = configparser.ConfigParser()
         config.read('config.ini')
-        self.current_list_name = config['now_playing_message']['now_list']
-        self.current_list = list(check(str(self.current_list_name).split("'")[1]).keys())
+        self.current_list_name = config['push_list']['push_list_name']
+        self.current_list = list(check(str(self.current_list_name)).keys())
 
     def npl_initUI(self):
-        self.top_label = QLabel(self.current_list_name.split("'")[1])
+        self.top_label = QLabel(self.current_list_name)
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setFixedHeight(500)
         self.scroll_list = QWidget()
         self.scroll_layout = QVBoxLayout(self.scroll_list)
-        # add something...
+        # 添加列表项
         for n in self.current_list:
             l = QLabel(n)
             l.setStyleSheet('QLabel {color:lightblue;}')
             self.scroll_layout.addWidget(l)
-        # end
+        # 添加结束
         self.scroll_list.adjustSize()
         self.scroll_area.setWidget(self.scroll_list)
 
@@ -47,7 +142,6 @@ class now_playing_list:
         # 1.1'当前列表名'标签
         top_layout.addWidget(self.top_label)
         # 1.2切换列表按钮
-        #top_layout.addWidget(self.switch_button)
         main_layout.addLayout(top_layout)
 
         # 2可滚动列表
@@ -68,6 +162,7 @@ class now_playing_list:
 
 
 class musiclist:
+    """Main_Page的第二行中间组件"""
     def __init__(self):
         super().__init__()
 
@@ -84,6 +179,7 @@ class musiclist:
         self.edit_button = QPushButton('编辑歌单')
         self.edit_button.clicked.connect(self.edit_list)
         self.push_button = QPushButton('push')
+        self.push_button.clicked.connect(self.push)
 
         # 歌单列表
         self.push_scroll_area = QScrollArea()
@@ -178,6 +274,7 @@ class musiclist:
                 ''')
 
     def switch_list(self):
+        """切换按钮调用函数"""
         dialog = SwitchListDialog(self.push_list_name, self.ml_container.parent())
         if dialog.exec_() == QDialog.Accepted:
             # 用户点击了确认，更新配置
@@ -220,6 +317,7 @@ class musiclist:
                 update()
 
     def edit_list(self):
+        """编辑按钮调用函数 弹出EditDialog"""
         dialog = EditDialog(self.push_list_name)
         if dialog.exec_() != QDialog.Accepted:
             def update():
@@ -250,6 +348,13 @@ class musiclist:
                 # 设置到滚动区域
                 self.push_scroll_area.setWidget(self.push_scroll_list)
             update()
+
+    def push(self):
+        # 重新加载数据
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.push_list_name = config['push_list']['push_list_name']
+        self.show_list = list(check(self.push_list_name).keys())
 
 
 class Main_Page(now_playing_list,musiclist):
