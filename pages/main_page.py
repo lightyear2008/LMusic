@@ -1,4 +1,6 @@
-from PyQt5.QtCore import Qt
+# Copyright (c) 2026 lightyear2008
+# SPDX-License-Identifier: MIT
+from PyQt5.QtCore import Qt, pyqtSignal, QObject
 from PyQt5.QtWidgets import (QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
                              QLineEdit, QScrollArea, QSlider, QDialog)
 import sys
@@ -94,15 +96,6 @@ class NowPlayingItemWidget(QWidget):
             }
         """)
 
-    def get_song_name(self):
-        """获取歌曲名"""
-        return self.song_name
-
-    def set_song_name(self, name):
-        """设置歌曲名"""
-        self.song_name = name
-        self.song_label.setText(name)
-
     def set_delete_callback(self, callback):
         """设置删除按钮的回调函数"""
         self.delete_button.clicked.connect(callback)
@@ -110,6 +103,7 @@ class NowPlayingItemWidget(QWidget):
 
 class now_playing_list:
     """Main_Page的第二行左边组件"""
+
     def __init__(self):
         super().__init__()
         config = configparser.ConfigParser()
@@ -122,40 +116,131 @@ class now_playing_list:
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setFixedHeight(500)
+        self.scroll_area.setWidgetResizable(True)  # 让内容自适应
+
         self.scroll_list = QWidget()
         self.scroll_layout = QVBoxLayout(self.scroll_list)
-        # 添加列表项
-        for n in self.current_list:
-            l = QLabel(n)
-            l.setStyleSheet('QLabel {color:lightblue;}')
-            self.scroll_layout.addWidget(l)
-        # 添加结束
-        self.scroll_list.adjustSize()
+        self.scroll_layout.setContentsMargins(0, 0, 0, 0)
+        self.scroll_layout.setSpacing(0)
+
+        # 使用自定义控件添加列表项
+        for song_name in self.current_list:
+            item_widget = NowPlayingItemWidget(song_name)
+            # 连接删除按钮事件 - 直接删除，无需确认
+            item_widget.delete_button.clicked.connect(
+                lambda checked, name=song_name: self.delete_song(name)
+            )
+            self.scroll_layout.addWidget(item_widget)
+
+        # 添加弹性空间
+        self.scroll_layout.addStretch()
+
         self.scroll_area.setWidget(self.scroll_list)
 
     def npl_init_layout(self):
-        self.npl_container = QWidget()  # 给它写CSS
+        self.npl_container = QWidget()
         main_layout = QVBoxLayout(self.npl_container)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(10)
 
-        # 1('当前列表名'标签 切换列表按钮)的横向布局
+        # 顶部布局（标签和切换按钮）
         top_layout = QHBoxLayout()
-        # 1.1'当前列表名'标签
         top_layout.addWidget(self.top_label)
-        # 1.2切换列表按钮
+        # 可以在这里添加切换按钮等
         main_layout.addLayout(top_layout)
 
-        # 2可滚动列表
+        # 滚动列表
         main_layout.addWidget(self.scroll_area)
 
     def npl_init_CSS_dark(self):
         self.top_label.setStyleSheet('''
-                QLabel {
-                    color: red;
-                    font-size: 35px;
-                }
-                ''')
+            QLabel {
+                color: red;
+                font-size: 35px;
+                padding: 10px;
+            }
+        ''')
 
-    def update(self):
+        # 滚动区域样式
+        self.scroll_area.setStyleSheet('''
+            QScrollArea {
+                background-color: #1E1E1E;
+                border: none;
+                border-radius: 10px;
+            }
+            QScrollBar:vertical {
+                background-color: #2D2D2D;
+                width: 10px;
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical {
+                background-color: #555555;
+                border-radius: 5px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color: #666666;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                border: none;
+                background: none;
+            }
+        ''')
+
+        # 容器样式
+        self.npl_container.setStyleSheet('''
+            QWidget {
+                background-color: #1A1A1A;
+                border-radius: 15px;
+            }
+        ''')
+
+    def delete_song(self, song_name):
+        """删除歌曲"""
+        # 从数据列表中删除
+        if song_name in self.current_list:
+            self.current_list.remove(song_name)
+            # 刷新UI显示
+            self.refresh_list()
+            # 可选：打印日志
+            print(f"已删除歌曲: {song_name}")
+
+    def refresh_list(self):
+        """刷新列表显示"""
+        # 清空现有内容（保留最后一个弹性空间）
+        while self.scroll_layout.count() > 1:
+            item = self.scroll_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        # 重新添加列表项
+        for song_name in self.current_list:
+            item_widget = NowPlayingItemWidget(song_name)
+            item_widget.delete_button.clicked.connect(
+                lambda checked, name=song_name: self.delete_song(name)
+            )
+            self.scroll_layout.insertWidget(self.scroll_layout.count() - 1, item_widget)
+
+        # 确保弹性空间在最后
+        # 如果弹性空间被移动了，重新添加
+        if self.scroll_layout.count() > 0:
+            last_item = self.scroll_layout.itemAt(self.scroll_layout.count() - 1)
+            if last_item and not last_item.widget():
+                # 最后一项是弹性空间，保持不变
+                pass
+            else:
+                # 添加弹性空间
+                self.scroll_layout.addStretch()
+
+    def update(self,show_list):
+        """更新整个组件"""
+        # 重新加载数据
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.current_list_name = config['push_list']['push_list_name']
+        self.current_list = show_list
+
+        # 刷新UI
         self.npl_initUI()
         self.npl_init_layout()
         self.npl_init_CSS_dark()
