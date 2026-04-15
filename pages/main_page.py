@@ -1,6 +1,6 @@
 # Copyright (c) 2026 lightyear2008
 # SPDX-License-Identifier: MIT
-from PyQt5.QtCore import Qt, pyqtSignal, QObject
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
                              QLineEdit, QScrollArea, QSlider, QDialog)
 import sys
@@ -44,7 +44,7 @@ class NowPlayingItemWidget(QWidget):
         # 删除按钮
         self.delete_button = QPushButton("删除")
         self.delete_button.setFixedSize(60, 30)
-        self.delete_button.setCursor(Qt.PointingHandCursor)
+        self.delete_button.setCursor(Qt.PointingHandCursor) # 鼠标悬停时显示手型光标
 
         # 将标签和按钮添加到布局
         layout.addWidget(self.song_label, 1)  # 标签占1份空间
@@ -202,8 +202,8 @@ class now_playing_list:
             self.current_list.remove(song_name)
             # 刷新UI显示
             self.refresh_list()
-            # 可选：打印日志
-            print(f"已删除歌曲: {song_name}")
+            # 日志
+            #print(f"已删除歌曲: {song_name}")
 
     def refresh_list(self):
         """刷新列表显示"""
@@ -232,7 +232,7 @@ class now_playing_list:
                 # 添加弹性空间
                 self.scroll_layout.addStretch()
 
-    def update(self,show_list):
+    def update_npl(self,show_list):
         """更新整个组件"""
         # 重新加载数据
         config = configparser.ConfigParser()
@@ -241,9 +241,7 @@ class now_playing_list:
         self.current_list = show_list
 
         # 刷新UI
-        self.npl_initUI()
-        self.npl_init_layout()
-        self.npl_init_CSS_dark()
+        self.refresh_list()
 
 
 class musiclist:
@@ -256,6 +254,8 @@ class musiclist:
         config.read('config.ini')
         self.push_list_name = config['push_list']['push_list_name']
         self.show_list = list(check(self.push_list_name).keys())
+
+        self.push_callback = None
 
     def ml_initUI(self):
         self.top_label_ml = QLabel('歌单')
@@ -441,10 +441,18 @@ class musiclist:
         self.push_list_name = config['push_list']['push_list_name']
         self.show_list = list(check(self.push_list_name).keys())
 
+        if self.push_callback:
+            self.push_callback(self.show_list)
+
+    def set_push_callback(self, callback):
+        """设置push按钮的回调函数"""
+        self.push_callback = callback
+
 
 class Main_Page(now_playing_list,musiclist):
     def __init__(self):
         super().__init__()
+        self.set_push_callback(self.update_npl)
 
     def initUI_main(self):
         self.searchbox = QLineEdit()
@@ -523,7 +531,7 @@ class Main_Page(now_playing_list,musiclist):
         self.search_window = SearchBox(self.searchbox.text())
         self.search_window.show()
         #self.search_window.destroyed.connect(lambda :print('search_window已关闭'))
-        now_playing_list.update(self)
+        now_playing_list.update_npl(self, )
 
     def init_CSS_DARK_main(self):
         self.searchbox.setStyleSheet('''
