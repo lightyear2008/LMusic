@@ -1,3 +1,5 @@
+# Copyright (c) 2026 lightyear2008
+# SPDX-License-Identifier: MIT
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout,
                              QLineEdit, QPushButton, QHBoxLayout, QWidget,
                              QLabel, QListWidget, QListWidgetItem)
@@ -245,7 +247,7 @@ class SearchBox(QMainWindow,):
                 self.show_condition(str('下载失败，状态码：' + str(status_code)))
 
         # 开始下载操作
-        if self.main_list.currentItem() == None:
+        if self.main_list.currentItem() is None:
             print('请选择要下载的歌曲')
         else:
             self.show_condition('正在获取下载链接...')

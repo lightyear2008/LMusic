@@ -1,3 +1,5 @@
+# Copyright (c) 2026 lightyear2008
+# SPDX-License-Identifier: MIT
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel)
 from PyQt5.QtGui import QPalette, QColor, QPixmap, QIcon
@@ -204,4 +206,3 @@ if __name__ == '__main__':
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
-

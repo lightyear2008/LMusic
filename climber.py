@@ -1,3 +1,5 @@
+# Copyright (c) 2026 lightyear2008
+# SPDX-License-Identifier: MIT
 import requests
 from bs4 import BeautifulSoup
 import os
