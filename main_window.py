@@ -37,6 +37,7 @@ class MainWindow(QMainWindow,Main_Page,ranking_page):
 
     def update_UI_to_main_page(self):
         self.page = 'main_page'
+        Main_Page.__init__(self)
         self.initUI()
         self.init_main_layout()
         self.init_CSS_DARK()

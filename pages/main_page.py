@@ -1,6 +1,6 @@
 # Copyright (c) 2026 lightyear2008
 # SPDX-License-Identifier: MIT
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
                              QLineEdit, QScrollArea, QSlider, QDialog)
 import sys
@@ -19,45 +19,37 @@ from edit_window import EditDialog
 
 class NowPlayingItemWidget(QWidget):
     """当前播放列表的每一行控件，包含歌曲名和删除按钮"""
+    select_signal = pyqtSignal(object,bool)
+
     def __init__(self, song_name, parent=None):
-        """
-        初始化歌曲项控件
-        :param song_name: 歌曲名称
-        :param parent: 父控件
-        """
         super().__init__(parent)
         self.song_name = song_name
-        self.init_ui()
+        self.selected = False
+        self.init_UI()
         self.setup_style()
 
-    def init_ui(self):
+    def init_UI(self):
         """初始化UI"""
-        # 创建水平布局
         layout = QHBoxLayout()
         layout.setContentsMargins(15, 10, 15, 10)
         layout.setSpacing(15)
 
-        # 歌曲名标签
         self.song_label = QLabel(self.song_name)
         self.song_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
-        # 删除按钮
         self.delete_button = QPushButton("删除")
         self.delete_button.setFixedSize(60, 30)
-        self.delete_button.setCursor(Qt.PointingHandCursor) # 鼠标悬停时显示手型光标
+        self.delete_button.setCursor(Qt.PointingHandCursor)
 
-        # 将标签和按钮添加到布局
-        layout.addWidget(self.song_label, 1)  # 标签占1份空间
-        layout.addWidget(self.delete_button, 0)  # 按钮固定大小
+        layout.addWidget(self.song_label, 1)
+        layout.addWidget(self.delete_button, 0)
 
         self.setLayout(layout)
-
-        # 设置控件最小高度
         self.setMinimumHeight(50)
 
     def setup_style(self):
-        """设置样式"""
-        # 歌曲标签样式
+        """设置基础样式（只调用一次）"""
+        # 歌曲标签基础样式
         self.song_label.setStyleSheet("""
             QLabel {
                 color: lightblue;
@@ -85,7 +77,7 @@ class NowPlayingItemWidget(QWidget):
             }
         """)
 
-        # 控件整体样式（悬停效果）
+        # 控件整体样式（包含选中状态）
         self.setStyleSheet("""
             NowPlayingItemWidget {
                 background-color: transparent;
@@ -94,7 +86,61 @@ class NowPlayingItemWidget(QWidget):
             NowPlayingItemWidget:hover {
                 background-color: #2D2D2D;
             }
+            NowPlayingItemWidget[selected="true"] {
+                background-color: #3A6EA5;
+                border-left: 4px solid #5B9BD5;
+            }
+            NowPlayingItemWidget[selected="true"]:hover {
+                background-color: #4A7EB5;
+            }
         """)
+
+    def set_selected(self, selected, emit_signal=True):
+        """设置选中状态"""
+        if self.selected != selected:
+            self.selected = selected
+
+            # 更新控件自身的属性
+            self.setProperty("selected", str(selected).lower())
+            self.style().unpolish(self)
+            self.style().polish(self)
+
+            # 更新歌曲标签样式
+            self.update_label_style(selected)
+
+            if emit_signal:
+                self.select_signal.emit(self, selected)
+
+    def update_label_style(self, selected):
+        """根据选中状态更新标签样式"""
+        if selected:
+            self.song_label.setStyleSheet("""
+                QLabel {
+                    color: #2ECC71;
+                    font-size: 24px;
+                    background: transparent;
+                    font-weight: bold;
+                }
+            """)
+        else:
+            self.song_label.setStyleSheet("""
+                QLabel {
+                    color: lightblue;
+                    font-size: 18px;
+                    background: transparent;
+                    font-weight: 500;
+                }
+            """)
+
+    def is_selected(self):
+        """返回是否选中"""
+        return self.selected
+
+    def mousePressEvent(self, event):
+        """鼠标点击时切换选中状态"""
+        if event.button() == Qt.LeftButton:
+            self.set_selected(not self.selected)
+        super().mousePressEvent(event)
 
     def set_delete_callback(self, callback):
         """设置删除按钮的回调函数"""
@@ -111,6 +157,9 @@ class now_playing_list:
         self.current_list_name = config['push_list']['push_list_name']
         self.current_list = list(check(str(self.current_list_name)).keys())
 
+        self.current_selected_item = None
+        self.item_list = []
+
     def npl_initUI(self):
         self.top_label = QLabel(self.current_list_name)
 
@@ -126,11 +175,18 @@ class now_playing_list:
         # 使用自定义控件添加列表项
         for song_name in self.current_list:
             item_widget = NowPlayingItemWidget(song_name)
+            item_widget.select_signal.connect(self.on_item_selected_change)
+            self.item_list.append(item_widget)
+            if song_name == self.current_list[0]:  # 默认选中第一首歌
+                item_widget.set_selected(True)
             # 连接删除按钮事件 - 直接删除，无需确认
             item_widget.delete_button.clicked.connect(
                 lambda checked, name=song_name: self.delete_song(name)
             )
             self.scroll_layout.addWidget(item_widget)
+        print(self.item_list)
+        print([n.is_selected() for n in self.item_list])
+        print(len([n.is_selected() for n in self.item_list if n.is_selected()]))
 
         # 添加弹性空间
         self.scroll_layout.addStretch()
@@ -197,13 +253,19 @@ class now_playing_list:
 
     def delete_song(self, song_name):
         """删除歌曲"""
-        # 从数据列表中删除
         if song_name in self.current_list:
+            # 记录是否删除的是当前选中项
+            was_selected = (self.current_selected_item and
+                            self.current_selected_item.song_name == song_name)
+
             self.current_list.remove(song_name)
+
+            # 如果删除的是选中项，清除记录（刷新时会重新选中）
+            if was_selected:
+                self.current_selected_item = None
+
             # 刷新UI显示
             self.refresh_list()
-            # 日志
-            #print(f"已删除歌曲: {song_name}")
 
     def refresh_list(self):
         """刷新列表显示"""
@@ -213,23 +275,52 @@ class now_playing_list:
             if item.widget():
                 item.widget().deleteLater()
 
+        # 清空列表记录
+        self.item_list.clear()
+
+        # 记录之前选中的歌曲名
+        previously_selected_name = self.current_selected_item.song_name if self.current_selected_item else None
+
         # 重新添加列表项
-        for song_name in self.current_list:
+        for i, song_name in enumerate(self.current_list):
             item_widget = NowPlayingItemWidget(song_name)
+            item_widget.select_signal.connect(self.on_item_selected_change)
+            self.item_list.append(item_widget)
+
+            # 恢复选中状态
+            should_select = False
+
+            # 1. 如果是之前选中的歌曲且仍在列表中
+            if previously_selected_name and song_name == previously_selected_name:
+                should_select = True
+            # 2. 如果没有之前选中的记录，且是第一项
+            elif previously_selected_name is None and i == 0:
+                should_select = True
+            # 3. 如果列表只有一项，强制选中
+            elif len(self.current_list) == 1:
+                should_select = True
+
+            if should_select:
+                item_widget.set_selected(True, emit_signal=False)
+                self.current_selected_item = item_widget
+
             item_widget.delete_button.clicked.connect(
                 lambda checked, name=song_name: self.delete_song(name)
             )
             self.scroll_layout.insertWidget(self.scroll_layout.count() - 1, item_widget)
 
+        # 确保至少有一个选中项
+        if self.current_selected_item is None and len(self.current_list) > 0:
+            first_item = self.item_list[0]
+            first_item.set_selected(True, emit_signal=False)
+            self.current_selected_item = first_item
+
         # 确保弹性空间在最后
-        # 如果弹性空间被移动了，重新添加
         if self.scroll_layout.count() > 0:
             last_item = self.scroll_layout.itemAt(self.scroll_layout.count() - 1)
             if last_item and not last_item.widget():
-                # 最后一项是弹性空间，保持不变
                 pass
             else:
-                # 添加弹性空间
                 self.scroll_layout.addStretch()
 
     def update_npl(self,show_list):
@@ -242,6 +333,20 @@ class now_playing_list:
 
         # 刷新UI
         self.refresh_list()
+
+    def on_item_selected_change(self,item,selected):
+        """当NowPlayingItemWidget的mousePressEvent运行时调用"""
+        if selected:
+            # 取消之前选中的项
+            if self.current_selected_item and self.current_selected_item != item:
+                self.current_selected_item.set_selected(False, emit_signal=False)
+
+            # 设置新的选中项
+            self.current_selected_item = item
+        else:
+            # 选中已经选中的项
+            if self.current_selected_item == item:
+                item.set_selected(True, emit_signal=False)
 
 
 class musiclist:
@@ -448,6 +553,35 @@ class musiclist:
         """设置push按钮的回调函数"""
         self.push_callback = callback
 
+    def refresh(self):
+        """刷新显示"""
+        # 重新加载数据
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.push_list_name = config['push_list']['push_list_name']
+        self.show_list = list(check(self.push_list_name).keys())
+
+        # 重新创建整个内容区域
+        # 删除旧的内容
+        if self.push_scroll_list:
+            self.push_scroll_list.deleteLater()
+
+        # 创建新的内容部件
+        self.push_scroll_list = QWidget()
+        self.push_scroll_layout = QVBoxLayout(self.push_scroll_list)
+
+        # 添加内容
+        for n in self.show_list:
+            l = QLabel(n)
+            l.setStyleSheet('QLabel {color:lightblue;}')
+            self.push_scroll_layout.addWidget(l)
+
+        # 添加弹簧
+        self.push_scroll_layout.addStretch()
+
+        # 设置到滚动区域
+        self.push_scroll_area.setWidget(self.push_scroll_list)
+
 
 class Main_Page(now_playing_list,musiclist):
     def __init__(self):
@@ -530,8 +664,7 @@ class Main_Page(now_playing_list,musiclist):
         # 这里之前用的线程,跑不了,显示'进程已结束，退出代码为 -1073741819 (0xC0000005)'
         self.search_window = SearchBox(self.searchbox.text())
         self.search_window.show()
-        #self.search_window.destroyed.connect(lambda :print('search_window已关闭'))
-        now_playing_list.update_npl(self, )
+        self.search_window.destroyed.connect(lambda :musiclist.refresh(self))
 
     def init_CSS_DARK_main(self):
         self.searchbox.setStyleSheet('''

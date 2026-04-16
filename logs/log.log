@@ -52,3 +52,7 @@
 2026-03-19 13:09:46 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: 'main' at mp3_db\my_lists\'main'.txt
 2026-03-19 13:10:09 - WARNING - dbcrudtool2.py - wrapper - 33 - 歌单不存在: 'main' at mp3_db\my_lists\'main'.txt
 2026-03-20 12:41:16 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-04-16 12:51:34 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-04-16 12:51:41 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-04-16 12:51:50 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-04-16 12:52:02 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404

@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout,
                              QLineEdit, QPushButton, QHBoxLayout, QWidget,
                              QLabel, QListWidget, QListWidgetItem)
 from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtCore import Qt
 import sys
 import os
 import threading
@@ -22,6 +23,7 @@ class SearchBox(QMainWindow,):
         self.button_list = []
         self.download_url = ''
         self.sound = None
+        self.setAttribute(Qt.WA_DeleteOnClose) # 关闭窗口时自动删除C++对象
 
         self.initUI()
         self.init_layout()
@@ -239,8 +241,6 @@ class SearchBox(QMainWindow,):
             if status_code == 200:
                 self.show_condition('下载成功')
                 add('main',self.musiclist[self.main_list.currentRow()][1])
-                from pages import now_playing_list
-                now_playing_list.npl_initUI(self)
             else:
                 self.show_condition(str('下载失败，状态码：' + str(status_code)))
 
