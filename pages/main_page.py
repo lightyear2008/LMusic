@@ -330,6 +330,7 @@ class now_playing_list:
         config.read('config.ini')
         self.current_list_name = config['push_list']['push_list_name']
         self.current_list = show_list
+        self.top_label.setText(self.current_list_name)
 
         # 刷新UI
         self.refresh_list()
@@ -583,7 +584,284 @@ class musiclist:
         self.push_scroll_area.setWidget(self.push_scroll_list)
 
 
-class Main_Page(now_playing_list,musiclist):
+class musicplayer:
+    """Main_Page的第二行右上方组件"""
+    def __init__(self):
+        super().__init__()
+
+    def mp_initUI(self):
+        self.last_btn = QPushButton('上一首')
+        self.play_btn = QPushButton('播放')
+        self.next_btn = QPushButton('下一首')
+        self.mode_btn = QPushButton('模式')
+
+        # 添加滑块
+        self.progress_slider = QSlider(Qt.Horizontal)
+        self.progress_slider.setRange(0, 100)
+        self.progress_slider.setValue(0)
+
+    def mp_init_layout(self):
+        self.mp_container = QWidget()
+        main_layout = QVBoxLayout(self.mp_container)
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(self.last_btn)
+        btn_layout.addWidget(self.play_btn)
+        btn_layout.addWidget(self.next_btn)
+        btn_layout.addWidget(self.mode_btn)
+        main_layout.addLayout(btn_layout)
+
+        # 添加滑块布局
+        slider_layout = QVBoxLayout()
+        slider_layout.addWidget(self.progress_slider)
+        main_layout.addLayout(slider_layout)
+
+    def mp_init_CSS_dark(self):
+        self.last_btn.setStyleSheet('''
+                QPushButton {
+                    background-color: #555555;
+                    color: white;
+                    border: none;
+                    border-radius: 20px;
+                    font-size: 21px;
+                    font-weight: 500;
+                    min-height: 40px;
+                    min-width: 40px;
+                }
+                QPushButton:hover {
+                    background-color: #666666;
+                }
+                QPushButton:pressed {
+                    border: 5px groove;
+                    padding: 6px 5px 4px 5px;
+                }
+                ''')
+        self.play_btn.setStyleSheet('''
+                QPushButton {
+                    background-color: #555555;
+                    color: white;
+                    border: none;
+                    border-radius: 20px;
+                    font-size: 21px;
+                    font-weight: 500;
+                    min-height: 40px;
+                    min-width: 40px;
+                }
+                QPushButton:hover {
+                    background-color: #666666;
+                }
+                QPushButton:pressed {
+                    border: 5px groove;
+                    padding: 6px 5px 4px 5px;
+                }
+                ''')
+        self.next_btn.setStyleSheet('''
+                QPushButton {
+                    background-color: #555555;
+                    color: white;
+                    border: none;
+                    border-radius: 20px;
+                    font-size: 21px;
+                    font-weight: 500;
+                    min-height: 40px;
+                    min-width: 40px;
+                }
+                QPushButton:hover {
+                    background-color: #666666;
+                }
+                QPushButton:pressed {
+                    border: 5px groove;
+                    padding: 6px 5px 4px 5px;
+                }
+                ''')
+        self.mode_btn.setStyleSheet('''
+                QPushButton {
+                    background-color: #555555;
+                    color: white;
+                    border: none;
+                    border-radius: 20px;
+                    font-size: 21px;
+                    font-weight: 500;
+                    min-height: 40px;
+                    min-width: 40px;
+                }
+                QPushButton:hover {
+                    background-color: #666666;
+                }
+                QPushButton:pressed {
+                    border: 5px groove;
+                    padding: 6px 5px 4px 5px;
+                }
+                ''')
+        # 滑块样式
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        style = int(config['main']['slider_style'])
+        if style == 1:
+            # 经典蓝色风格
+            self.progress_slider.setStyleSheet('''
+                QSlider {
+                    min-height: 30px;
+                }
+                QSlider::groove:horizontal {
+                    height: 6px;
+                    background: #3a3a3a;
+                    border-radius: 3px;
+                }
+                QSlider::sub-page:horizontal {
+                    background: #3574F0;
+                    border-radius: 3px;
+                }
+                QSlider::add-page:horizontal {
+                    background: #3a3a3a;
+                    border-radius: 3px;
+                }
+                QSlider::handle:horizontal {
+                    background: #ffffff;
+                    width: 15px;
+                    height: 15px;
+                    margin: -5px 0;
+                    border-radius: 7px;
+                }
+                QSlider::handle:horizontal:hover {
+                    background: #3574F0;
+                    transform: scale(1.2);
+                }
+                ''')
+        elif style == 2:
+            # 蓝色渐变风格
+            self.progress_slider.setStyleSheet('''
+                QSlider {
+                    min-height: 40px;
+                }
+                QSlider::groove:horizontal {
+                    height: 4px;
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                                stop:0 #2a2a2a, stop:1 #3a3a3a);
+                    border-radius: 2px;
+                }
+                QSlider::sub-page:horizontal {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                                stop:0 #3574F0, stop:1 #5B9AFF);
+                    border-radius: 2px;
+                }
+                QSlider::handle:horizontal {
+                    background: white;
+                    width: 14px;
+                    height: 14px;
+                    margin: -5px 0;
+                    border-radius: 7px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+                QSlider::handle:horizontal:hover {
+                    background: #5B9AFF;
+                    width: 16px;
+                    height: 16px;
+                    margin: -6px 0;
+                }
+                ''')
+        elif style == 3:
+            # 绿-蓝渐变风格
+            self.progress_slider.setStyleSheet('''
+                QSlider {
+                    min-height: 50px;
+                }
+                QSlider::groove:horizontal {
+                    height: 6px;
+                    background: #2a2a2a;
+                    border-radius: 3px;
+                }
+                QSlider::sub-page:horizontal {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                                stop:0 #00FF88,
+                                                stop:0.3 #00FFCC,
+                                                stop:0.6 #00CCFF,
+                                                stop:1 #0088FF);
+                    border-radius: 3px;
+                }
+                QSlider::add-page:horizontal {
+                    background: #2a2a2a;
+                    border-radius: 3px;
+                }
+                QSlider::handle:horizontal {
+                    background: white;
+                    width: 24px;
+                    height: 24px;
+                    margin: -9px 0;
+                    border-radius: 12px;
+                    border: 2px solid #00FF88;
+                    box-shadow: 0 0 8px rgba(0,255,136,0.5);
+                }
+                QSlider::handle:horizontal:hover {
+                    background: #f0f0f0;
+                    width: 28px;
+                    height: 28px;
+                    margin: -11px 0;
+                    border-radius: 14px;
+                    border: 2px solid #00FFCC;
+                    box-shadow: 0 0 12px rgba(0,255,204,0.6);
+                }
+                QSlider::handle:horizontal:pressed {
+                    background: #e0e0e0;
+                    width: 26px;
+                    height: 26px;
+                    margin: -10px 0;
+                    border-radius: 13px;
+                    border: 2px solid #0088FF;
+                    box-shadow: 0 0 10px rgba(0,136,255,0.5);
+                }
+                ''')
+        elif style == 4:
+            # 荧光渐变风格
+            self.progress_slider.setStyleSheet('''
+                    QSlider {
+                        min-height: 55px;
+                    }
+                    QSlider::groove:horizontal {
+                        height: 8px;
+                        background: #1a1a1a;
+                        border-radius: 4px;
+                    }
+                    QSlider::sub-page:horizontal {
+                        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                                    stop:0 #7FFF00,
+                                                    stop:0.25 #00FF7F,
+                                                    stop:0.5 #00FFFF,
+                                                    stop:0.75 #1E90FF,
+                                                    stop:1 #0000FF);
+                        border-radius: 4px;
+                    }
+                    QSlider::handle:horizontal {
+                        background: qradialgradient(cx:0.5, cy:0.5, radius: 0.5,
+                                                    stop:0 #FFFFFF,
+                                                    stop:0.7 #E0E0E0,
+                                                    stop:1 #C0C0C0);
+                        width: 26px;
+                        height: 26px;
+                        margin: -9px 0;
+                        border-radius: 13px;
+                        border: 3px solid #7FFF00;
+                        box-shadow: 0 0 10px rgba(127,255,0,0.4);
+                    }
+                    QSlider::handle:horizontal:hover {
+                        background: #FFFFFF;
+                        width: 30px;
+                        height: 30px;
+                        margin: -11px 0;
+                        border: 3px solid #00FFFF;
+                        box-shadow: 0 0 15px rgba(0,255,255,0.6);
+                    }
+                    QSlider::handle:horizontal:pressed {
+                        background: #E0E0E0;
+                        width: 28px;
+                        height: 28px;
+                        margin: -10px 0;
+                        border: 3px solid #1E90FF;
+                    }
+                    ''')
+
+
+class Main_Page(now_playing_list,musiclist,musicplayer):
     def __init__(self):
         super().__init__()
         self.set_push_callback(self.update_npl)
@@ -598,7 +876,9 @@ class Main_Page(now_playing_list,musiclist):
 
         musiclist.ml_initUI(self)
 
-        self.tiny_player_button = QPushButton('打开微型播放器')
+        musicplayer.mp_initUI(self)
+
+        self.tiny_player_button = QPushButton('最小化播放器')
 
         # 音量条
         self.volume_slider = QSlider(Qt.Horizontal)
@@ -634,15 +914,21 @@ class Main_Page(now_playing_list,musiclist):
             musiclist.ml_init_layout(self)
             self.second_layout.addWidget(self.ml_container, stretch=1)
 
-            #2.3 (打开微型播放器 音量)竖直布局
-            self.open_button_and_volume_layout = QVBoxLayout()
-            def set_open_button_and_volume_layout():
+            #2.3 (音乐播放器 打开微型播放器 音量)竖直布局
+            self.right_layout = QVBoxLayout()
+            def set_right_layout():
+                # 音乐播放器
+                musicplayer.mp_init_layout(self)
+                self.right_layout.addWidget(self.mp_container,stretch=2)
+                self.right_layout.addSpacing(200)
                 # 打开微型播放器按钮
-                self.open_button_and_volume_layout.addWidget(self.tiny_player_button)
+                self.right_layout.addWidget(self.tiny_player_button,stretch=1)
+                self.right_layout.addSpacing(20)
                 # 音量条
-                self.open_button_and_volume_layout.addWidget(self.volume_slider)
-            set_open_button_and_volume_layout()
-            self.second_layout.addLayout(self.open_button_and_volume_layout,stretch=1)
+                self.right_layout.addWidget(self.volume_slider,stretch=1)
+            set_right_layout()
+            self.second_layout.addLayout(self.right_layout, stretch=1)
+            self.second_layout.addSpacing(20)
         set_second_layout()
         self.page_main.addSpacing(30)
         self.page_main.addLayout(self.second_layout,stretch=3)
@@ -709,3 +995,11 @@ class Main_Page(now_playing_list,musiclist):
                 }  
                 ''')
         musiclist.ml_init_CSS_dark(self)
+
+        self.mp_container.setStyleSheet('''
+                QWidget {
+                    border-radius: 15px;
+                    background: #000000;
+                }  
+                ''')
+        musicplayer.mp_init_CSS_dark(self)
