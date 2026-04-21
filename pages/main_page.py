@@ -1,11 +1,12 @@
 # Copyright (c) 2026 lightyear2008
 # SPDX-License-Identifier: MIT
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QThread
 from PyQt5.QtWidgets import (QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
                              QLineEdit, QScrollArea, QSlider, QDialog)
 import sys
 import os
 import configparser
+import json
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 external_directory = os.path.abspath(os.path.join(current_directory, '..'))
@@ -152,10 +153,10 @@ class now_playing_list:
 
     def __init__(self):
         super().__init__()
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-        self.current_list_name = config['push_list']['push_list_name']
-        self.current_list = list(check(str(self.current_list_name)).keys())
+        with open('now_playing_message.json', 'r', encoding='utf-8') as f:
+            self.now_playing_message_json = json.load(f)
+        self.current_list_name = self.now_playing_message_json['play_list_name']
+        self.current_list = self.now_playing_message_json['now_playing_list']
 
         self.current_selected_item = None
         self.item_list = []
@@ -177,13 +178,30 @@ class now_playing_list:
             item_widget = NowPlayingItemWidget(song_name)
             item_widget.select_signal.connect(self.on_item_selected_change)
             self.item_list.append(item_widget)
-            if song_name == self.current_list[0]:  # 默认选中第一首歌
+
+            # 选中json中指定的歌
+            with open('now_playing_message.json', 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if song_name == data['selected_item']:
                 item_widget.set_selected(True)
+
             # 连接删除按钮事件 - 直接删除，无需确认
             item_widget.delete_button.clicked.connect(
                 lambda checked, name=song_name: self.delete_song(name)
             )
             self.scroll_layout.addWidget(item_widget)
+
+        # 防止json中记录的选中项不在列表中
+        if not any([n.is_selected() for n in self.item_list]) and len(self.item_list) > 0:
+            self.item_list[0].set_selected(True) # 默认选中第一项
+            # 修改json
+            with open('now_playing_message.json', 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            data['selected_item'] = self.item_list[0].song_name
+            with open('now_playing_message.json', 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+
+        # 调试输出
         print(self.item_list)
         print([n.is_selected() for n in self.item_list])
         print(len([n.is_selected() for n in self.item_list if n.is_selected()]))
@@ -249,18 +267,25 @@ class now_playing_list:
                 background-color: #1A1A1A;
                 border-radius: 15px;
             }
-        ''')
+        ''');
 
     def delete_song(self, song_name):
         """删除歌曲"""
         if song_name in self.current_list:
+            # 同步json
+            with open('now_playing_message.json', 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            data['now_playing_list'].remove(song_name)
+            with open('now_playing_message.json', 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+
             # 记录是否删除的是当前选中项
             was_selected = (self.current_selected_item and
                             self.current_selected_item.song_name == song_name)
 
             self.current_list.remove(song_name)
 
-            # 如果删除的是选中项，清除记录（刷新时会重新选中）
+            # 如果删除的是选中项，清除记录
             if was_selected:
                 self.current_selected_item = None
 
@@ -344,6 +369,13 @@ class now_playing_list:
 
             # 设置新的选中项
             self.current_selected_item = item
+
+            # 修改json
+            with open('now_playing_message.json', 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            data['selected_item'] = item.song_name
+            with open('now_playing_message.json', 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
         else:
             # 选中已经选中的项
             if self.current_selected_item == item:
@@ -549,6 +581,13 @@ class musiclist:
 
         if self.push_callback:
             self.push_callback(self.show_list)
+            # 同步json
+            with open('now_playing_message.json', 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            data['play_list_name'] = self.push_list_name
+            data['now_playing_list'] = self.show_list
+            with open('now_playing_message.json', 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
 
     def set_push_callback(self, callback):
         """设置push按钮的回调函数"""
@@ -593,7 +632,10 @@ class musicplayer:
         self.last_btn = QPushButton('上一首')
         self.play_btn = QPushButton('播放')
         self.next_btn = QPushButton('下一首')
-        self.mode_btn = QPushButton('模式')
+        with open('now_playing_message.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        self.mode_btn = QPushButton('顺序' if data['play_mode']=='normal' else '循环' if data['play_mode']=='repeat' else '随机')
+        self.mode_btn.clicked.connect(self.change_mode)
 
         # 添加滑块
         self.progress_slider = QSlider(Qt.Horizontal)
@@ -859,6 +901,31 @@ class musicplayer:
                         border: 3px solid #1E90FF;
                     }
                     ''')
+
+    def change_mode(self):
+        with open('now_playing_message.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        current_mode = data['play_mode']
+        if current_mode == 'normal':
+            new_mode = 'repeat'
+            self.mode_btn.setText('循环')
+        elif current_mode == 'repeat':
+            new_mode = 'random'
+            self.mode_btn.setText('随机')
+        elif current_mode == 'random':
+            new_mode = 'normal'
+            self.mode_btn.setText('顺序')
+        else:
+            new_mode = 'normal'
+            self.mode_btn.setText('顺序')
+        data['play_mode'] = new_mode
+        with open('now_playing_message.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+class Main_Playing_Thread(QThread):
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
 
 class Main_Page(now_playing_list,musiclist,musicplayer):
