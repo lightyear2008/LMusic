@@ -192,11 +192,5 @@ if __name__ == '__main__':
     print(check('list2'))
     print(check_lists())
 
-    import json
-    with open('now_playing_message.json', 'r', encoding='utf-8') as f:
-        a = json.load(f)
-    pretty = json.dumps(a, indent=2, ensure_ascii=False)
-    print(a['play_list_name'])
-
 
 'Shift+F10'

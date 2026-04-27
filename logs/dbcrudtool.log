@@ -43,3 +43,4 @@
 2026-04-09 13:02:18 - WARNING - dbcrudtool2.py - rename_list - 175 - 新歌单已存在: list2 at mp3_db\my_lists\list2.txt
 2026-04-20 09:29:51 - WARNING - dbcrudtool2.py - rename_list - 175 - 新歌单已存在: list2 at mp3_db\my_lists\list2.txt
 2026-04-20 09:30:40 - WARNING - dbcrudtool2.py - rename_list - 175 - 新歌单已存在: list2 at mp3_db\my_lists\list2.txt
+2026-04-23 13:08:11 - WARNING - dbcrudtool2.py - delete - 76 - delete中文件不存在: 调试音频.mp3 not in mp3_db\main_db.txt

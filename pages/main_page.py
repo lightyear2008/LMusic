@@ -7,6 +7,8 @@ import sys
 import os
 import configparser
 import json
+from just_playback import Playback
+from threading import Lock
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 external_directory = os.path.abspath(os.path.join(current_directory, '..'))
@@ -177,6 +179,7 @@ class now_playing_list:
         for song_name in self.current_list:
             item_widget = NowPlayingItemWidget(song_name)
             item_widget.select_signal.connect(self.on_item_selected_change)
+            item_widget.text = song_name
             self.item_list.append(item_widget)
 
             # 选中json中指定的歌
@@ -204,7 +207,6 @@ class now_playing_list:
         # 调试输出
         print(self.item_list)
         print([n.is_selected() for n in self.item_list])
-        print(len([n.is_selected() for n in self.item_list if n.is_selected()]))
 
         # 添加弹性空间
         self.scroll_layout.addStretch()
@@ -288,6 +290,12 @@ class now_playing_list:
             # 如果删除的是选中项，清除记录
             if was_selected:
                 self.current_selected_item = None
+                with open('now_playing_message.json','r',encoding='utf-8') as f:
+                    data = json.load(f)
+                if data['now_playing_list'][0]:
+                    data['selected_item'] = data['now_playing_list'][0]
+                    with open('now_playing_message.json','w',encoding='utf-8') as f:
+                        json.dump(data, f, ensure_ascii=False, indent=4)
 
             # 刷新UI显示
             self.refresh_list()
@@ -380,6 +388,14 @@ class now_playing_list:
             # 选中已经选中的项
             if self.current_selected_item == item:
                 item.set_selected(True, emit_signal=False)
+
+    def change_selected_item_callback(self,song_name):
+        self.current_selected_item.set_selected(False, emit_signal=False)
+        for item in self.item_list:
+            if item.song_name == song_name:
+                item.set_selected(True, emit_signal=False)
+                self.current_selected_item = item
+                break
 
 
 class musiclist:
@@ -631,6 +647,7 @@ class musicplayer:
     def mp_initUI(self):
         self.last_btn = QPushButton('上一首')
         self.play_btn = QPushButton('播放')
+        self.play_btn.clicked.connect(self.play_state_changed)
         self.next_btn = QPushButton('下一首')
         with open('now_playing_message.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -922,16 +939,214 @@ class musicplayer:
         with open('now_playing_message.json', 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
+    def play_state_changed(self):
+        """根据播放状态更新按钮文本"""
+        with open('now_playing_message.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        if data['if_playing']:
+            self.play_btn.setText('播放')
+            data['if_playing'] = False
+        else:
+            self.play_btn.setText('暂停')
+            data['if_playing'] = True
+        with open('now_playing_message.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+    def update_position_callback(self, percent):
+        """更新进度条位置"""
+        self.progress_slider.setValue(percent)
+
 
 class Main_Playing_Thread(QThread):
+    """音乐播放线程"""
+
+    # 定义信号
+    position_changed = pyqtSignal(int)  # 播放进度百分比 (0-100)
+    song_changed = pyqtSignal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.playback = Playback()
+        self.lock = Lock()
+        data = self.read_json()
+        data['if_playing'] = False
+        self.rewrite_json(data)
+
+        self.update_data()
+        self.thread_current_file = self.read_json()['selected_item']
+        self.thread_is_playing = False  # 记录此线程的播放状态,用来判断播放按钮被点击
+
+    def read_json(self):
+        with self.lock:
+            with open('now_playing_message.json', 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data
+
+    def rewrite_json(self, data):
+        with self.lock:
+            with open('now_playing_message.json', 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+
+    def update_data(self):
+        data = self.read_json()
+        self.current_file = data['selected_item']
+        self.is_playing = data['if_playing']
+        self.mode = data['play_mode']
+
+    def run(self):
+        """线程主循环"""
+        while True:
+            self.update_data()
+
+            # 开始播放
+            if self.is_playing and not self.thread_is_playing:
+                if self.playback.paused:
+                    self.resume()
+                else:
+                    status = self.load()
+                    if status:
+                        self.play()
+
+            # 暂停播放
+            if not self.is_playing and self.thread_is_playing:
+                self.pause()
+
+            # 用户切换歌曲
+            if self.thread_current_file != self.current_file:
+                self.stop_()
+                self.load()
+                self.play()
+                self.thread_current_file = self.current_file
+
+            # 播放结束
+            if not self.playback.active and self.is_playing:
+                # 根据self.mode切换音频并开始播放
+                if self.mode == 'repeat':
+                    self.playback.play()
+                elif self.mode == 'normal':
+                    print('normal')
+                    # 计算下一首歌的名字
+                    data = self.read_json()
+                    list = data['now_playing_list']
+                    if len(list) - 1 == list.index(data['selected_item']):
+                        next_song = list[0]
+                    else:
+                        next_song = list[list.index(data['selected_item']) + 1]
+                    self.thread_current_file = next_song # 防止'用户切歌'被触发
+
+                    # 更新json并开始播放
+                    data = self.read_json()
+                    data['selected_item'] = next_song
+                    self.rewrite_json(data)
+                    self.update_data()
+                    self.load()
+                    self.playback.play()
+
+                    # 丢信号让UI更新
+                    self.song_changed.emit(next_song)
+
+                elif self.mode == 'random':
+                    print('random')
+
+            # 计算播放进度百分比
+            if self.is_playing:
+                current_pos_ms = int(self.playback.curr_pos * 1000)
+                duration_ms = int(self.playback.duration * 1000)
+                percent = int((current_pos_ms / duration_ms) * 100)
+                percent = max(0, min(100, percent))  # 限制在 0-100 范围内
+                self.position_changed.emit(percent) # 丢信号
+
+            self.msleep(500)  # 更新时间
+
+    def load(self):
+        """加载音乐文件"""
+        try:
+            def path_deal():
+                full_path = os.path.join('mp3_db','main_list',self.current_file + '.mp3')
+                if os.path.isfile(full_path):
+                    return full_path
+                else:
+                    raise FileNotFoundError(f"文件 {full_path} 不存在")
+            self.playback.load_file(path_deal())
+            return True
+        except Exception as e:
+            print(f"加载文件失败: {str(e)}")
+            return False
+
+    def play(self):
+        """播放"""
+        try:
+            self.playback.play()
+            # 同步json和线程状态
+            data = self.read_json()
+            data['if_playing'] = True
+            self.rewrite_json(data)
+            self.thread_is_playing = True
+        except Exception as e:
+            print(f"播放失败: {str(e)}")
+
+    def pause(self):
+        """暂停"""
+        try:
+            self.playback.pause()
+            data = self.read_json()
+            data['if_playing'] = False
+            self.rewrite_json(data)
+            self.thread_is_playing = False
+        except Exception as e:
+            print(f"暂停失败: {str(e)}")
+
+    def resume(self):
+        """继续播放"""
+        try:
+            self.playback.resume()
+            data = self.read_json()
+            data['if_playing'] = True
+            self.rewrite_json(data)
+            self.thread_is_playing = True
+        except Exception as e:
+            print(f"继续播放失败: {str(e)}")
+
+    def stop_(self):
+        """停止 加下划线是防止命名重复"""
+        try:
+            self.playback.stop()
+            self.position_changed.emit(0)  # 重置进度为 0%
+        except Exception as e:
+            print(f"停止失败: {str(e)}")
+
+    def seek(self, percent):
+        """跳转到指定位置（百分比 0-100）"""
+        try:
+            if self.length_ms > 0:
+                position_ms = int((percent / 100.0) * self.length_ms)
+                position_sec = position_ms / 1000.0
+                self.playback.seek(position_sec)
+                self.position_changed.emit(percent)
+        except Exception as e:
+            print(f"跳转失败: {str(e)}")
 
 
 class Main_Page(now_playing_list,musiclist,musicplayer):
     def __init__(self):
         super().__init__()
+        self.init_player()
         self.set_push_callback(self.update_npl)
+
+    def init_player(self):
+        self.player_thread = Main_Playing_Thread()
+        self.player_thread.position_changed.connect(self.on_position_changed)
+        self.player_thread.song_changed.connect(self.on_song_changed)
+        self.player_thread.start()
+
+    def on_position_changed(self, percent):
+        """接收播放线程的进度更新信号"""
+        self.update_position_callback(percent)
+
+    def on_song_changed(self,song):
+        """接收播放线程的歌曲切换信号"""
+        self.change_selected_item_callback(song)
+
 
     def initUI_main(self):
         self.searchbox = QLineEdit()
