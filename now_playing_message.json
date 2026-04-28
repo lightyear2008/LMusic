@@ -5,10 +5,11 @@
         "Run Free",
         "蝶",
         "So Far Away",
-        "调试音频1"
+        "调试音频1",
+        "我爱你但是我要回家"
     ],
-    "selected_item": "Run Free",
+    "selected_item": "我爱你但是我要回家",
     "if_playing": false,
-    "play_progress": 0.0,
-    "play_mode": "normal"
+    "play_progress": 0,
+    "play_mode": "repeat"
 }

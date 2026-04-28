@@ -1,12 +1,13 @@
 # Copyright (c) 2026 lightyear2008
 # SPDX-License-Identifier: MIT
-from PyQt5.QtCore import Qt, pyqtSignal, QThread
+from PyQt5.QtCore import Qt, pyqtSignal, QThread, QObject
 from PyQt5.QtWidgets import (QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
                              QLineEdit, QScrollArea, QSlider, QDialog)
 import sys
 import os
 import configparser
 import json
+from random import choice
 from just_playback import Playback
 from threading import Lock
 
@@ -100,19 +101,22 @@ class NowPlayingItemWidget(QWidget):
 
     def set_selected(self, selected, emit_signal=True):
         """设置选中状态"""
-        if self.selected != selected:
-            self.selected = selected
+        try:
+            if self.selected != selected:
+                self.selected = selected
 
-            # 更新控件自身的属性
-            self.setProperty("selected", str(selected).lower())
-            self.style().unpolish(self)
-            self.style().polish(self)
+                # 更新控件自身的属性
+                self.setProperty("selected", str(selected).lower())
+                self.style().unpolish(self)
+                self.style().polish(self)
 
-            # 更新歌曲标签样式
-            self.update_label_style(selected)
+                # 更新歌曲标签样式
+                self.update_label_style(selected)
 
-            if emit_signal:
-                self.select_signal.emit(self, selected)
+                if emit_signal:
+                    self.select_signal.emit(self, selected)
+        except Exception:
+            pass
 
     def update_label_style(self, selected):
         """根据选中状态更新标签样式"""
@@ -641,23 +645,30 @@ class musiclist:
 
 class musicplayer:
     """Main_Page的第二行右上方组件"""
+
+    # 关于进度条的信号
+    slider_pressed = pyqtSignal()
+    slider_released = pyqtSignal(int)
+
     def __init__(self):
         super().__init__()
 
     def mp_initUI(self):
-        self.last_btn = QPushButton('上一首')
-        self.play_btn = QPushButton('播放')
-        self.play_btn.clicked.connect(self.play_state_changed)
-        self.next_btn = QPushButton('下一首')
         with open('now_playing_message.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
+        self.last_btn = QPushButton('上一首')
+        self.play_btn = QPushButton('暂停' if data['if_playing'] else '播放')
+        self.play_btn.clicked.connect(self.play_state_changed)
+        self.next_btn = QPushButton('下一首')
         self.mode_btn = QPushButton('顺序' if data['play_mode']=='normal' else '循环' if data['play_mode']=='repeat' else '随机')
         self.mode_btn.clicked.connect(self.change_mode)
 
         # 添加滑块
         self.progress_slider = QSlider(Qt.Horizontal)
         self.progress_slider.setRange(0, 100)
-        self.progress_slider.setValue(0)
+        self.progress_slider.setValue(data['play_progress'])
+        self.progress_slider.sliderPressed.connect(lambda: (self.slider_pressed.emit(),print('aaa')))
+        self.progress_slider.sliderReleased.connect(lambda: self.slider_released.emit(self.progress_slider.value()))
 
     def mp_init_layout(self):
         self.mp_container = QWidget()
@@ -954,27 +965,43 @@ class musicplayer:
 
     def update_position_callback(self, percent):
         """更新进度条位置"""
-        self.progress_slider.setValue(percent)
+        try:
+            self.progress_slider.setValue(percent)
+        except:
+            pass
+
+    def play_btn_change_callback(self, is_playing):
+        """根据播放状态更新按钮文本"""
+        if is_playing:
+            self.play_btn.setText('暂停')
+        else:
+            self.play_btn.setText('播放')
 
 
-class Main_Playing_Thread(QThread):
+class Main_Playing_Thread(QThread,musicplayer):
     """音乐播放线程"""
 
     # 定义信号
     position_changed = pyqtSignal(int)  # 播放进度百分比 (0-100)
     song_changed = pyqtSignal(str)
+    play_btn_state_changed = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.playback = Playback()
         self.lock = Lock()
+
+        # 初始化json文件
         data = self.read_json()
         data['if_playing'] = False
+        data['play_progress'] = 0
         self.rewrite_json(data)
 
         self.update_data()
         self.thread_current_file = self.read_json()['selected_item']
         self.thread_is_playing = False  # 记录此线程的播放状态,用来判断播放按钮被点击
+
+        self.slider_pressed.connect(lambda :print('a'))
 
     def read_json(self):
         with self.lock:
@@ -992,6 +1019,7 @@ class Main_Playing_Thread(QThread):
         self.current_file = data['selected_item']
         self.is_playing = data['if_playing']
         self.mode = data['play_mode']
+        self.progress = data['play_progress']
 
     def run(self):
         """线程主循环"""
@@ -1017,14 +1045,13 @@ class Main_Playing_Thread(QThread):
                 self.load()
                 self.play()
                 self.thread_current_file = self.current_file
+                self.play_btn_state_changed.emit(True) # 同步播放按钮状态
 
-            # 播放结束
+            # 播放结束,根据self.mode切换音频并开始播放
             if not self.playback.active and self.is_playing:
-                # 根据self.mode切换音频并开始播放
                 if self.mode == 'repeat':
                     self.playback.play()
                 elif self.mode == 'normal':
-                    print('normal')
                     # 计算下一首歌的名字
                     data = self.read_json()
                     list = data['now_playing_list']
@@ -1044,9 +1071,26 @@ class Main_Playing_Thread(QThread):
 
                     # 丢信号让UI更新
                     self.song_changed.emit(next_song)
-
                 elif self.mode == 'random':
-                    print('random')
+                    data = self.read_json()
+                    list = data['now_playing_list']
+                    next_song = choice(list)
+                    while next_song == data['selected_item'] and len(list) > 1: # 防止随机到当前歌曲
+                        next_song = choice(list)
+                    self.thread_current_file = next_song # 防止'用户切歌'被触发
+
+                    # 更新json并开始播放
+                    data = self.read_json()
+                    data['selected_item'] = next_song
+                    self.rewrite_json(data)
+                    self.update_data()
+                    self.load()
+                    self.playback.play()
+
+                    # 丢信号让UI更新
+                    self.song_changed.emit(next_song)
+                else:
+                    raise ValueError(f"\033[92m未知的播放模式: {self.mode}\033[0m")
 
             # 计算播放进度百分比
             if self.is_playing:
@@ -1054,6 +1098,10 @@ class Main_Playing_Thread(QThread):
                 duration_ms = int(self.playback.duration * 1000)
                 percent = int((current_pos_ms / duration_ms) * 100)
                 percent = max(0, min(100, percent))  # 限制在 0-100 范围内
+                if self.progress != percent: # 更新json的播放进度,减少内存占用
+                    data_refresh_progress = self.read_json()
+                    data_refresh_progress['play_progress'] = percent
+                    self.rewrite_json(data_refresh_progress)
                 self.position_changed.emit(percent) # 丢信号
 
             self.msleep(500)  # 更新时间
@@ -1115,28 +1163,33 @@ class Main_Playing_Thread(QThread):
         except Exception as e:
             print(f"停止失败: {str(e)}")
 
+    @staticmethod
     def seek(self, percent):
         """跳转到指定位置（百分比 0-100）"""
         try:
-            if self.length_ms > 0:
-                position_ms = int((percent / 100.0) * self.length_ms)
-                position_sec = position_ms / 1000.0
-                self.playback.seek(position_sec)
-                self.position_changed.emit(percent)
+            if self.playback.duration > 0:
+                target_pos = (percent / 100) * self.playback.duration
+                self.playback.seek(target_pos)
+                self.position_changed.emit(percent)  # 更新进度条位置
         except Exception as e:
             print(f"跳转失败: {str(e)}")
 
 
 class Main_Page(now_playing_list,musiclist,musicplayer):
+    if_init_player_thread = False
+
     def __init__(self):
         super().__init__()
-        self.init_player()
+        if not Main_Page.if_init_player_thread: # 确保只初始化一次播放线程
+            self.init_player()
+            Main_Page.if_init_player_thread = True
         self.set_push_callback(self.update_npl)
 
     def init_player(self):
         self.player_thread = Main_Playing_Thread()
         self.player_thread.position_changed.connect(self.on_position_changed)
         self.player_thread.song_changed.connect(self.on_song_changed)
+        self.player_thread.play_btn_state_changed.connect(self.on_play_state_changed)
         self.player_thread.start()
 
     def on_position_changed(self, percent):
@@ -1147,6 +1200,9 @@ class Main_Page(now_playing_list,musiclist,musicplayer):
         """接收播放线程的歌曲切换信号"""
         self.change_selected_item_callback(song)
 
+    def on_play_state_changed(self,if_playing):
+        """接收播放线程的播放状态更新信号"""
+        self.play_btn_change_callback(if_playing)
 
     def initUI_main(self):
         self.searchbox = QLineEdit()

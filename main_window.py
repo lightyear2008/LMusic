@@ -202,6 +202,7 @@ class MainWindow(QMainWindow,Main_Page,ranking_page):
             ranking_page.init_CSS_DARK_ranking(self)
 
 if __name__ == '__main__':
+    print('\033[92mCopyright (c) 2026 lightyear2008\nSPDX-License-Identifier: MIT\033[0m')
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
