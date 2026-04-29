@@ -192,7 +192,7 @@ class now_playing_list:
             if song_name == data['selected_item']:
                 item_widget.set_selected(True)
 
-            # 连接删除按钮事件 - 直接删除，无需确认
+            # 连接删除按钮事件
             item_widget.delete_button.clicked.connect(
                 lambda checked, name=song_name: self.delete_song(name)
             )
@@ -207,10 +207,6 @@ class now_playing_list:
             data['selected_item'] = self.item_list[0].song_name
             with open('now_playing_message.json', 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
-
-        # 调试输出
-        print(self.item_list)
-        print([n.is_selected() for n in self.item_list])
 
         # 添加弹性空间
         self.scroll_layout.addStretch()
@@ -649,6 +645,9 @@ class musicplayer:
     # 关于进度条的信号
     slider_pressed = pyqtSignal()
     slider_released = pyqtSignal(int)
+    # 用于跳转到上一首和下一首的信号
+    seek_to_last_song = pyqtSignal()
+    seek_to_next_song = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -657,9 +656,11 @@ class musicplayer:
         with open('now_playing_message.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
         self.last_btn = QPushButton('上一首')
+        self.last_btn.clicked.connect(lambda : self.seek_to_last_song.emit())
         self.play_btn = QPushButton('暂停' if data['if_playing'] else '播放')
         self.play_btn.clicked.connect(self.play_state_changed)
         self.next_btn = QPushButton('下一首')
+        self.next_btn.clicked.connect(lambda : self.seek_to_next_song.emit())
         self.mode_btn = QPushButton('顺序' if data['play_mode']=='normal' else '循环' if data['play_mode']=='repeat' else '随机')
         self.mode_btn.clicked.connect(self.change_mode)
 
@@ -992,6 +993,11 @@ class Main_Playing_Thread(QThread):
         self.lock = Lock()
         self.player_control = player_control
 
+        # 从ini读取更新频率
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.sleep_time = int(config['update_time']['update_time_ms'])
+
         # 初始化json文件
         data = self.read_json()
         data['if_playing'] = False
@@ -1005,6 +1011,8 @@ class Main_Playing_Thread(QThread):
         self.if_slider_pressed = False # 记录滑块是否被按下,用来判断是否需要更新进度
         self.player_control.slider_pressed.connect(lambda :setattr(self,'if_slider_pressed',True))
         self.player_control.slider_released.connect(lambda value:(setattr(self,'if_slider_pressed',False),self.seek(value)))
+        self.player_control.seek_to_next_song.connect(self.seek_to_next)
+        self.player_control.seek_to_last_song.connect(self.seek_to_last)
 
     def read_json(self):
         with self.lock:
@@ -1110,7 +1118,7 @@ class Main_Playing_Thread(QThread):
                 if not self.if_slider_pressed:
                     self.position_changed.emit(percent) # 丢信号
 
-            self.msleep(500)  # 更新时间
+            self.msleep(self.sleep_time)  # 更新时间
 
     def load(self):
         """加载音乐文件"""
@@ -1181,6 +1189,30 @@ class Main_Playing_Thread(QThread):
                 self.rewrite_json(data)
         except Exception as e:
             print(f"跳转失败: {str(e)}")
+
+    def seek_to_next(self):
+        """跳转到下一首歌"""
+        data = self.read_json()
+        list = data['now_playing_list']
+        if len(list) - 1 == list.index(data['selected_item']):
+            next_song = list[0]
+        else:
+            next_song = list[list.index(data['selected_item']) + 1]
+        data['selected_item'] = next_song
+        self.rewrite_json(data)
+        self.song_changed.emit(next_song)
+
+    def seek_to_last(self):
+        """跳转到上一首歌"""
+        data = self.read_json()
+        list = data['now_playing_list']
+        if list.index(data['selected_item']) == 0:
+            last_song = list[-1]
+        else:
+            last_song = list[list.index(data['selected_item']) - 1]
+        data['selected_item'] = last_song
+        self.rewrite_json(data)
+        self.song_changed.emit(last_song)
 
 
 class Main_Page(now_playing_list,musiclist,musicplayer):
