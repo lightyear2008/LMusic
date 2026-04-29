@@ -6,10 +6,11 @@
         "蝶",
         "So Far Away",
         "调试音频1",
-        "我爱你但是我要回家"
+        "我爱你但是我要回家",
+        "天另一侧"
     ],
     "selected_item": "我爱你但是我要回家",
-    "if_playing": false,
-    "play_progress": 0,
-    "play_mode": "repeat"
+    "if_playing": true,
+    "play_progress": 73,
+    "play_mode": "normal"
 }
