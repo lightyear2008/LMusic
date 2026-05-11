@@ -1,8 +1,8 @@
 # Copyright (c) 2026 lightyear2008
 # SPDX-License-Identifier: MIT
-from PyQt5.QtCore import Qt, pyqtSignal, QThread, QObject
+from PyQt5.QtCore import Qt, pyqtSignal, QThread
 from PyQt5.QtWidgets import (QHBoxLayout, QWidget, QPushButton, QVBoxLayout, QLabel,
-                             QLineEdit, QScrollArea, QSlider, QDialog)
+                             QLineEdit, QScrollArea, QSlider, QDialog, QFileDialog)
 import sys
 import os
 import configparser
@@ -10,15 +10,16 @@ import json
 from random import choice
 from just_playback import Playback
 from threading import Lock
+from shutil import copy2
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 external_directory = os.path.abspath(os.path.join(current_directory, '..'))
 sys.path.append(external_directory)
 
 from searchbox import SearchBox
-from dbcrudtool2 import check
+from dbcrudtool2 import check,add
 from switch_window import SwitchListDialog
-from edit_window import EditDialog
+from edit_window import EditDialog, InputDialog, MessageDialog
 
 
 class NowPlayingItemWidget(QWidget):
@@ -240,9 +241,8 @@ class now_playing_list:
         # 滚动区域样式
         self.scroll_area.setStyleSheet('''
             QScrollArea {
-                background-color: #1E1E1E;
+                background-color: #0D0D0D;
                 border: none;
-                border-radius: 10px;
             }
             QScrollBar:vertical {
                 background-color: #2D2D2D;
@@ -250,12 +250,10 @@ class now_playing_list:
                 border-radius: 5px;
             }
             QScrollBar::handle:vertical {
-                background-color: #555555;
-                border-radius: 5px;
+                background-color: #17202A;
+                border-radius: 7px;
                 min-height: 20px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background-color: #666666;
+                border-radius: 1px;
             }
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
                 border: none;
@@ -266,10 +264,10 @@ class now_playing_list:
         # 容器样式
         self.npl_container.setStyleSheet('''
             QWidget {
-                background-color: #1A1A1A;
+                background-color: #101010;
                 border-radius: 15px;
             }
-        ''');
+        ''')
 
     def delete_song(self, song_name):
         """删除歌曲"""
@@ -422,6 +420,27 @@ class musiclist:
 
         # 歌单列表
         self.push_scroll_area = QScrollArea()
+        self.push_scroll_area.setStyleSheet('''
+                QScrollArea {
+                    background-color: #0D0D0D;
+                    border: none;
+                }
+                QScrollBar:vertical {
+                    background-color: #2D2D2D;
+                    width: 10px;
+                    border-radius: 5px;
+                }
+                QScrollBar::handle:vertical {
+                    background-color: #17202A;
+                    border-radius: 7px;
+                    min-height: 20px;
+                    border-radius: 1px;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    border: none;
+                    background: none;
+                }
+        ''')
         self.push_scroll_area.setFixedHeight(500)
         self.push_scroll_list = QWidget()
         self.push_scroll_layout = QVBoxLayout(self.push_scroll_list)
@@ -511,6 +530,7 @@ class musiclist:
                     padding: 6px 5px 4px 5px;
                 }
                 ''')
+        # 因为执行顺序问题,push_scroll_area的CSS已迁移到ml_initUI
 
     def switch_list(self):
         """切换按钮调用函数"""
@@ -1214,6 +1234,9 @@ class Main_Playing_Thread(QThread):
         self.rewrite_json(data)
         self.song_changed.emit(last_song)
 
+    def change_volume(self,volume):
+        self.playback.set_volume(volume)
+
 
 class Main_Page(now_playing_list,musiclist,musicplayer):
     if_init_player_thread = False
@@ -1256,15 +1279,20 @@ class Main_Page(now_playing_list,musiclist,musicplayer):
 
         musicplayer.mp_initUI(self)
 
+        self.manually_add_button = QPushButton('手动添加歌曲')
+        self.manually_add_button.clicked.connect(self.manually_add)
         self.tiny_player_button = QPushButton('最小化播放器')
 
         # 音量条
         self.volume_slider = QSlider(Qt.Horizontal)
         self.volume_slider.setMinimum(0)  # 设置最小值
         self.volume_slider.setMaximum(100)  # 设置最大值
-        self.volume_slider.setValue(80)  # 设置默认值
-        self.volume_slider.setTickInterval(100)  # 设置刻度间隔
-        self.volume_slider.setTickPosition(QSlider.TicksBelow)  # 设置刻度位置
+        self.volume_slider.setValue(100)  # 设置默认值
+        self.volume_slider.sliderReleased.connect(lambda :
+                                                  self.player_thread.change_volume(
+                                                      self.volume_slider.value() / 100
+                                                      )
+                                                  )
 
     def init_layout_main(self):
         # 主布局(竖方向)
@@ -1298,10 +1326,13 @@ class Main_Page(now_playing_list,musiclist,musicplayer):
                 # 音乐播放器
                 musicplayer.mp_init_layout(self)
                 self.right_layout.addWidget(self.mp_container,stretch=2)
-                self.right_layout.addSpacing(200)
-                # 打开微型播放器按钮
-                self.right_layout.addWidget(self.tiny_player_button,stretch=1)
-                self.right_layout.addSpacing(20)
+                self.right_layout.addSpacing(150)
+                # 手动添加歌曲按钮、打开微型播放器按钮(横向布局)
+                add_open_layout = QHBoxLayout()
+                add_open_layout.addWidget(self.manually_add_button,stretch=1)
+                add_open_layout.addWidget(self.tiny_player_button,stretch=1)
+                self.right_layout.addLayout(add_open_layout)
+                self.right_layout.addSpacing(50)
                 # 音量条
                 self.right_layout.addWidget(self.volume_slider,stretch=1)
             set_right_layout()
@@ -1329,6 +1360,20 @@ class Main_Page(now_playing_list,musiclist,musicplayer):
         self.search_window = SearchBox(self.searchbox.text())
         self.search_window.show()
         self.search_window.destroyed.connect(lambda :musiclist.refresh(self))
+
+    def manually_add(self):
+        # 打开文件选择对话框
+        file_path,_ = QFileDialog.getOpenFileName(self.ml_container, '选择音乐文件','', "音频文件 (*.mp3);;所有文件 (*.*)")
+
+        if file_path:
+            file_name = file_path.split('/')[-1].split('.')[0]
+            file_name = InputDialog.show_input_box('重命名歌曲','重命名歌曲',None,file_name)
+            if file_name and os.path.getsize(file_path) <= 31457280:
+                add('main', file_path.split('/')[-1].split('.')[0])
+                copy2(file_path,os.path.join('mp3_db','main_list',file_path.split('/')[-1].split('.')[0] + '.mp3'))
+                musiclist.refresh(self)
+            else:
+                MessageDialog.show_message('文件必须小于30MB且文件名不能为空','错误')
 
     def init_CSS_DARK_main(self):
         self.searchbox.setStyleSheet('''
@@ -1358,10 +1403,80 @@ class Main_Page(now_playing_list,musiclist,musicplayer):
                         border: 5px groove #0f172a;
                     }
                 ''')
-        self.npl_container.setStyleSheet('''
-                QWidget {
-                    border-radius: 15px;
-                    background: #000000;
+        self.manually_add_button.setStyleSheet('''
+                QPushButton {
+                            background-color: #555555;
+                            color: white;
+                            border: none;
+                            border-radius: 20px;
+                            font-size: 21px;
+                            font-weight: 500;
+                            min-height: 40px;
+                            min-width: 40px;
+                        }
+                        QPushButton:hover {
+                            background-color: #666666;
+                        }
+                        QPushButton:pressed {
+                            border: 5px groove;
+                            padding: 6px 5px 4px 5px;
+                        }
+                ''')
+        self.tiny_player_button.setStyleSheet('''
+                QPushButton {
+                    background-color: #555555;
+                    color: white;
+                    border: none;
+                    border-radius: 20px;
+                    font-size: 21px;
+                    font-weight: 500;
+                    min-height: 40px;
+                    min-width: 40px;
+                }
+                QPushButton:hover {
+                    background-color: #666666;
+                }
+                QPushButton:pressed {
+                    border: 5px groove;
+                    padding: 6px 5px 4px 5px;
+                }
+                ''')
+        self.volume_slider.setStyleSheet('''
+                QSlider {
+                    min-height: 40px;
+                }
+                QSlider::groove:horizontal {
+                    height: 6px;
+                    background: #555555;
+                    border-radius: 2px;
+                }
+                QSlider::sub-page:horizontal {
+                    background: #FFFFFF;
+                    border-radius: 2px;
+                }
+                QSlider::handle:horizontal {
+                    background: #FFFFFF;
+                    width: 15px;
+                    height: 15px;
+                    margin: -5px 0;
+                    border-radius: 7px;
+                    border: 2px solid #cccccc;
+                }
+                QSlider::handle:horizontal:hover {
+                    background: #4ECDC4;
+                    width: 16px;
+                    height: 16px;
+                    margin: -6px 0;
+                    border-radius: 8px;
+                    border: 1px solid #cccccc;
+                }
+                QSlider::handle:horizontal:pressed {
+                    background: #4ECDC4;
+                    width: 18px;
+                    height: 18px;
+                    margin: -7px 0;
+                    border-radius: 9px;
+                    border: 1px solid #cccccc;
                 }
                 ''')
         now_playing_list.npl_init_CSS_dark(self)
@@ -1369,7 +1484,7 @@ class Main_Page(now_playing_list,musiclist,musicplayer):
         self.ml_container.setStyleSheet('''
                 QWidget {
                     border-radius: 15px;
-                    background: #000000;
+                    background: #101010;
                 }  
                 ''')
         musiclist.ml_init_CSS_dark(self)
@@ -1377,7 +1492,7 @@ class Main_Page(now_playing_list,musiclist,musicplayer):
         self.mp_container.setStyleSheet('''
                 QWidget {
                     border-radius: 15px;
-                    background: #000000;
+                    background: #101010;
                 }  
                 ''')
         musicplayer.mp_init_CSS_dark(self)

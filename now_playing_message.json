@@ -3,14 +3,21 @@
     "now_playing_list": [
         "All For Love (LÜ Remix)",
         "Run Free",
-        "蝶",
         "So Far Away",
         "调试音频1",
         "我爱你但是我要回家",
-        "天另一侧"
+        "天另一侧",
+        "黑土的乡愁",
+        "孤独的岛",
+        "苦咖啡",
+        "晚风告白",
+        "自由的代价",
+        "在深秋pt",
+        "雨是神的烟花",
+        "我这人确实挺差劲的"
     ],
-    "selected_item": "调试音频1",
+    "selected_item": "我爱你但是我要回家",
     "if_playing": true,
-    "play_progress": 51,
+    "play_progress": 46,
     "play_mode": "normal"
 }
