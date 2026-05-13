@@ -1,0 +1,11 @@
+{
+    "play_list_name": "main",
+    "now_playing_list": [
+        "孤独的岛",
+        "自由的代价"
+    ],
+    "selected_item": "自由的代价",
+    "if_playing": false,
+    "play_progress": 1,
+    "play_mode": "random"
+}

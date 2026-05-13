@@ -1,7 +1,6 @@
 {
     "play_list_name": "main",
     "now_playing_list": [
-        "All For Love (LÜ Remix)",
         "Run Free",
         "So Far Away",
         "调试音频1",
@@ -16,8 +15,8 @@
         "雨是神的烟花",
         "我这人确实挺差劲的"
     ],
-    "selected_item": "我爱你但是我要回家",
+    "selected_item": "So Far Away",
     "if_playing": true,
-    "play_progress": 46,
-    "play_mode": "normal"
+    "play_progress": 29,
+    "play_mode": "random"
 }
