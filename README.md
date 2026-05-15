@@ -40,13 +40,24 @@
 
 ## 功能特性
 
+- **本地音乐播放** - 支持 MP3 格式
+- **歌单管理** - 创建、编辑、切换不同歌单
+- **多种主题** - 内置多种滑块等样式，支持自定义
+- **歌曲搜索** - 自动联网搜索并下载歌曲到本地
+- **现代化界面** - 暗色主题，圆角设计，平滑动画
+- **轻量级应用** - 原始大小仅150MB，内存占用极低
+
 ## 界面预览
 
-<img title="" src=".\screenshots\screenshot1.jpg" alt="" width="300">                  <img title="" src=".\screenshots\screenshot2.jpg" alt="" width="300">
-
-## 安装
+<img title="" src="./screenshots/screenshot1.jpg" alt="" width="539">                  <img title="" src="./screenshots/screenshot2.jpg" alt="" width="300">
 
 ## 文件说明
+
+| 文件           | 功能       |
+| ------------ | -------- |
+| climber.py   | 所有网络爬虫函数 |
+| searchbox.py | 搜索框GUI   |
+|              |          |
 
 ## 支持创作者
 
