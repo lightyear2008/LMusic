@@ -42,7 +42,7 @@
 
 ## 界面预览
 
-![](https://github.com/lightyear2008/LMusic/screenshots/screenshot1.jpg)
+![](./screenshots/screenshot1.jpg)
 
 ## 安装
 
