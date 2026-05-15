@@ -42,7 +42,7 @@
 
 ## 界面预览
 
-![](./screenshots/screenshot1.jpg)
+<img title="" src=".\screenshots\screenshot1.jpg" alt="" width="300">                  <img title="" src=".\screenshots\screenshot2.jpg" alt="" width="300">
 
 ## 安装
 
