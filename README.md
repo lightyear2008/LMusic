@@ -1,10 +1,8 @@
 # LMusic
 
-
-
 一个轻量级的免费开源音乐app，集成了歌曲搜索并下载、管理和播放等功能
 
-## 快速开始（使用）
+## 快速开始
 
 **你可以通过以下两种方式之一运行本项目：**
 
@@ -20,16 +18,31 @@
 
 - Python 3.8 或更高版本
 
-- [Edge浏览器驱动](./drivers)对应版本的Edge浏览器（若此驱动比浏览器版本低，可手动替换，[查看替换教程]()）
-1. 
+- [Edge浏览器驱动](./drivers)对应版本的Edge浏览器（若此驱动较浏览器版本低，可手动替换，[查看替换教程]()）
+1. **克隆项目**
+   
+   ```bash
+   git clone https://github.com/yourusername/LMusic.git
+   cd LMusic
+   ```
 
-2. 
+2. **安装依赖**
+   
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-3. 
+3. **运行程序**
+   
+   ```bash
+   python main.py
+   ```
 
 ## 功能特性
 
-## 界面预览（截图）
+## 界面预览
+
+![](https://github.com/lightyear2008/LMusic/screenshots/screenshot1.jpg)
 
 ## 安装
 
