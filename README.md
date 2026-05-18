@@ -18,7 +18,7 @@
 
 - Python 3.8 或更高版本
 
-- [Edge浏览器驱动](./drivers)对应版本的Edge浏览器（若此驱动较浏览器版本低，可手动替换，[查看替换教程]()）
+- [Edge浏览器驱动](./drivers)对应版本的Edge浏览器（若此驱动较浏览器版本低，可手动替换，[查看替换教程](./drivers/update_driver_manual.md)）
 1. **克隆项目**
    
    ```bash
@@ -49,7 +49,7 @@
 
 ## 界面预览
 
-<img title="" src="./screenshots/screenshot1.jpg" alt="" width="539">                  <img title="" src="./screenshots/screenshot2.jpg" alt="" width="300">
+<img title="" src="./screenshots/screenshot1.jpg" alt="" width="487">                  <img title="" src="./screenshots/screenshot2.jpg" alt="" width="272">
 
 ## 文件说明
 
@@ -75,8 +75,10 @@
 
 - 以上是程序依赖的所有文件，正常运行必须
 
-## 支持创作者
-
 ## 许可证
 
+本项目使用[MIT License](./LICENSE)
+
 ## 版本日志
+
+V1.0 - 2026.5.18 初始版本
