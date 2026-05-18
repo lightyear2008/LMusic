@@ -53,11 +53,27 @@
 
 ## 文件说明
 
-| 文件           | 功能       |
-| ------------ | -------- |
-| climber.py   | 所有网络爬虫函数 |
-| searchbox.py | 搜索框GUI   |
-|              |          |
+| 文件                       | 功能                                             |
+| ------------------------ | ---------------------------------------------- |
+| pages/                   | 主页左侧边栏按钮对应页面的py文件（包）                           |
+| climber.py               | 所有网络爬虫函数                                       |
+| searchbox.py             | 搜索框GUI                                         |
+| dbcrudtool.py            | 已弃用的歌曲库操作工具                                    |
+| dbcrudtool2.py           | 本地歌曲库操作工具                                      |
+| edit_window.py           | 歌单管理窗口（点击主页的“编辑歌单”按钮弹出）                        |
+| main_window.py           | 主窗口GUI，调用pages中的页面                             |
+| switch_window.py         | “切换歌单”窗口，[预览界面](./screenshots/screenshot3.jpg) |
+| drivers/                 | 存储浏览器驱动，供selenium调用                            |
+| images/                  | 图像文件                                           |
+| logs/                    | 日志文件                                           |
+| mp3_db/main_list/        | 存储所有歌曲的MP3文件                                   |
+| mp3_db/my_lists/         | 所有自建歌单的歌曲名及播放次数信息                              |
+| mp3_db/main_db.txt       | 主歌单（包含目前本地所有歌曲）的歌曲名及播放次数信息                     |
+| try_music/               | 临时下载的试听歌曲MP3文件                                 |
+| config.ini               | 配置文件                                           |
+| now_playing_message.json | 音乐播放线程的实时更新数据                                  |
+
+- 以上是程序依赖的所有文件，正常运行必须
 
 ## 支持创作者
 
