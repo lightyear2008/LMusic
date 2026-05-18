@@ -2,10 +2,6 @@
 
 一个轻量级的免费开源音乐app，集成了歌曲搜索并下载、管理和播放等功能
 
-[![GitHub release](https://img.shields.io/github/v/release/lightyear2008/LMusic)](https://github.com/lightyear2008/LMusic/releases)
-
-
-
 ## 快速开始
 
 **你可以通过以下两种方式之一运行本项目：**
