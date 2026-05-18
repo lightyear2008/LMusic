@@ -49,7 +49,7 @@
 
 ## 界面预览
 
-<img title="" src="./screenshots/screenshot1.jpg" alt="" width="487">                  <img title="" src="./screenshots/screenshot2.jpg" alt="" width="272">
+<img title="" src="./screenshots/screenshot1.jpg" alt="" width="510">                  <img title="" src="./screenshots/screenshot2.jpg" alt="" width="284">
 
 ## 文件说明
 
