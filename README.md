@@ -22,7 +22,7 @@
 1. **克隆项目**
    
    ```bash
-   git clone https://github.com/yourusername/LMusic.git
+   git clone https://github.com/lightyear2008/LMusic.git
    cd LMusic
    ```
 
