@@ -39,11 +39,11 @@ class SearchBox(QMainWindow,):
         threading.Thread(target=first_search_thread).start()
 
     def initUI(self):
-        print('initUI')
-        # 设置窗口标题和大小和最小大小
+        # 设置窗口标题和大小和最小大小(在开发机上这个大小对应1400*1000)
         self.setWindowTitle('搜索歌曲')
-        self.setGeometry(0, 0, 1000, 1400)
-        self.setMinimumSize(1000, 1400)
+        screen = QApplication.desktop().screenGeometry()
+        self.setGeometry(0, 0, screen.width() // 3, int(screen.height() * 0.7))
+        self.setMinimumSize(screen.width() // 3, int(screen.height() * 0.7))
         # 设置主窗口背景色
         palette = QPalette()
         if self.COLOR_MODE == 'LIGHT':
@@ -52,30 +52,29 @@ class SearchBox(QMainWindow,):
             palette.setColor(QPalette.Window, QColor(43,45,48))  # 深色背景
         self.setPalette(palette)
         # 窗口居中
-        screen = QApplication.desktop().screenGeometry()
         size = self.geometry()
         self.move((screen.width() - size.width()) // 2, (screen.height() - size.height()) // 2)
 
         # 输入框
         self.inputbox = QLineEdit(self)
-        self.inputbox.setFixedSize(780,80)
+        self.inputbox.setFixedHeight(int(0.0572 * size.height())) # 开发机上此高度为80
         self.inputbox.setPlaceholderText('输入歌曲名...')
         self.inputbox.setText(self.input_text)
-        def return_pressed():
-            self.search_button.click()
-        self.inputbox.returnPressed.connect(return_pressed) # 回车触发点击事件
+        self.inputbox.returnPressed.connect(lambda :self.search_button.click()) # 回车触发点击事件
 
         # 搜索按钮
         self.search_button = QPushButton('搜索',self)
-        self.search_button.setFixedSize(180,80)
+        self.search_button.setFixedHeight(int(0.0572 * size.height()))
         self.search_button.clicked.connect(self.search)
 
         # 状态栏
         self.condition_label = QLabel('',self)
-        self.condition_label.setFixedSize(1000,80)
+        self.condition_label.setFixedSize(size.width(),int(0.0572 * size.height()))
 
         # 主列表
         self.main_list = QListWidget(self)
+        self.main_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
+        self.main_list.verticalScrollBar().setSingleStep(4)
 
         # 试听按钮
         self.try_button = QPushButton('试听',self)
@@ -86,14 +85,13 @@ class SearchBox(QMainWindow,):
         self.download_button.clicked.connect(self.download_mp3)
 
     def init_layout(self):
-        print('init_layout')
         # top_layout包含搜索栏、按钮和状态栏
         self.top_layout = QVBoxLayout()
 
         # 搜索栏和搜索按钮
         search_layout = QHBoxLayout()
-        search_layout.addWidget(self.inputbox)
-        search_layout.addWidget(self.search_button)
+        search_layout.addWidget(self.inputbox,stretch=39)
+        search_layout.addWidget(self.search_button,stretch=9)
         self.top_layout.addLayout(search_layout)
 
         # 状态栏
@@ -116,7 +114,7 @@ class SearchBox(QMainWindow,):
         # 安置top_layout布局(Menu)
         container = QWidget()
         container.setLayout(self.top_layout)
-        self.top_layout.setContentsMargins(0, 20, 0, 0) # 取消边距
+        self.top_layout.setContentsMargins(0,int(self.geometry().height()*0.0143), 0, 0) # 取消边距
         self.setMenuWidget(container)
 
         # 安置center_layout布局(Central)
@@ -126,7 +124,6 @@ class SearchBox(QMainWindow,):
         self.setCentralWidget(container2)
 
     def init_CSS(self):
-        print('init_CSS')
         self.inputbox.setStyleSheet('''
                     QLineEdit {
                         background-color: rgb(43,45,48); 
@@ -161,8 +158,56 @@ class SearchBox(QMainWindow,):
                     ''')
         self.main_list.setStyleSheet('''
                     QListWidget {
-                        background-color: rgb(15,17,19);
+                        background-color: rgb(15, 17, 19);
                         color: white;
+                        border: none;
+                        outline: none;
+                    }
+                    QListWidget QScrollBar:horizontal {
+                        height: 0px;
+                        background: transparent;
+                    }
+                    QListWidget QScrollBar:vertical {
+                        background: #1a1a1a;
+                        width: 16px;
+                        margin: 0px;
+                        border-radius: 6px;
+                    }
+                    QListWidget QScrollBar::handle:vertical {
+                        background: #3a3a3a;
+                        min-height: 30px;
+                        border-radius: 4px;
+                    }
+                    QListWidget QScrollBar::handle:vertical:hover {
+                        background: #4a4a4a;
+                    }
+                    QListWidget QScrollBar::handle:vertical:pressed {
+                        background: #555555;
+                    }
+                    QListWidget QScrollBar::sub-line:vertical,
+                    QListWidget QScrollBar::add-line:vertical {
+                        height: 0px;
+                        border: none;
+                    }
+                    QListWidget QScrollBar::up-arrow:vertical,
+                    QListWidget QScrollBar::down-arrow:vertical {
+                        height: 0px;
+                        width: 0px;
+                        border: none;
+                    }
+                    QListWidget QScrollBar::add-page:vertical,
+                    QListWidget QScrollBar::sub-page:vertical {
+                        background: none;
+                    }
+                    QListWidget::item:selected {
+                        background-color: #3574F0;
+                        color: white;
+                    }
+                    QListWidget::item:hover {
+                        background-color: rgba(53, 116, 240, 0.2);
+                        border: 1px solid white;
+                        border-radius: 7px;
+                        margin: 0px 0px 0px 0px;
                     }
                     ''')
         self.try_button.setStyleSheet('''
@@ -198,7 +243,6 @@ class SearchBox(QMainWindow,):
 
     # 查找歌曲并更新列表
     def search(self):
-        print('search')
         if self.main_list.currentItem() != None:
             print(self.main_list.currentRow())
 
@@ -232,7 +276,7 @@ class SearchBox(QMainWindow,):
         # 两个线程函数
         def download_thread_geturl():
             self.download_url = get_music_download_url(self.musiclist[self.main_list.currentRow()][0])
-            if self.download_url != 'url获取失败':
+            if self.download_url:
                 self.show_condition('正在下载...')
                 threading.Thread(target=download_thread_download).start()  # 启动下载线程
             else:
@@ -255,7 +299,6 @@ class SearchBox(QMainWindow,):
             threading.Thread(target = download_thread_geturl).start()
 
     def try_music(self):
-        print('try_music')
         if self.main_list.currentItem() is None:
             print('请选择要试听的歌曲')
             self.show_condition('请选择要试听的歌曲')
@@ -273,7 +316,7 @@ class SearchBox(QMainWindow,):
             self.show_condition('正在下载试听文件...')
             download_url = get_music_download_url(self.musiclist[self.main_list.currentRow()][0])
             path = os.path.join('try_music', self.musiclist[self.main_list.currentRow()][1])
-            if download_url == 'url获取失败':
+            if not download_url:
                 self.show_condition('下载链接获取失败,请重试')
                 return None
             download_music(download_url, path)
@@ -291,11 +334,13 @@ class SearchBox(QMainWindow,):
             download_finished_event.wait()
             self.show_condition('下载成功,正在试听')
             self.sound = playsound3.playsound(os.path.join('try_music', self.musiclist[self.main_list.currentRow()][1]) + '.mp3', block=False)
-        threading.Thread(target=wait_and_play_thread).start()
+        thread = threading.Thread(target=wait_and_play_thread)
+        thread.daemon = True  # 设置为守护线程
+        thread.start()
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = SearchBox('so far away')
+    window = SearchBox('天另一侧')
     window.show()
     sys.exit(app.exec())

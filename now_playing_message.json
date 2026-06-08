@@ -1,6 +1,7 @@
 {
     "play_list_name": "main",
     "now_playing_list": [
+        "All For Love (LÜ Remix)",
         "Run Free",
         "So Far Away",
         "调试音频1",
@@ -13,10 +14,11 @@
         "自由的代价",
         "在深秋pt",
         "雨是神的烟花",
-        "我这人确实挺差劲的"
+        "我这人确实挺差劲的",
+        "稻香"
     ],
-    "selected_item": "So Far Away",
+    "selected_item": "稻香",
     "if_playing": true,
-    "play_progress": 29,
+    "play_progress": 67,
     "play_mode": "random"
 }

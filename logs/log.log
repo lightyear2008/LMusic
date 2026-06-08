@@ -56,3 +56,33 @@
 2026-04-16 12:51:41 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
 2026-04-16 12:51:50 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
 2026-04-16 12:52:02 - ERROR - climber.py - get_music_url_list - 56 - 找不到网页，错误码：404
+2026-06-04 13:01:49 - WARNING - selenium_manager.py - _process_logs - 140 - The msedgedriver version (137.0.3296.83) detected in PATH at C:\Users\ssd\AppData\Local\Programs\Python\Python310\msedgedriver.exe might not be compatible with the detected MicrosoftEdge version (148.0.3967.70); currently, msedgedriver 148.0.3967.96 is recommended for MicrosoftEdge 148.*, so it is advised to delete the driver in PATH and retry
+2026-06-05 12:58:13 - ERROR - climber.py - get_music_download_url - 184 - audio元素查找超时
+2026-06-05 13:05:43 - ERROR - climber.py - get_music_download_url - 184 - audio元素查找超时
+2026-06-05 13:06:35 - ERROR - climber.py - get_music_download_url - 188 - 未知的错误:Message: no such window: target window already closed
+from unknown error: web view not found
+  (Session info: MicrosoftEdge=148.0.3967.70)
+Stacktrace:
+	msedgedriver!GetHandleVerifier [0x7ff63716e185+e0f5]
+	msedgedriver!GetHandleVerifier [0x7ff63716e1e4+e154]
+	msedgedriver!GetHandleVerifier [0x7ff6374e8bda+388b4a]
+	msedgedriver!(No symbol) [0x7ff636e7dadd]
+	msedgedriver!(No symbol) [0x7ff636f088cc]
+	msedgedriver!(No symbol) [0x7ff636f1e9bf]
+	msedgedriver!(No symbol) [0x7ff636eda2ec]
+	msedgedriver!(No symbol) [0x7ff636ed9546]
+	msedgedriver!(No symbol) [0x7ff636eda113]
+	msedgedriver!(No symbol) [0x7ff636fa27c9]
+	msedgedriver!(No symbol) [0x7ff636f9ef43]
+	msedgedriver!(No symbol) [0x7ff636faf432]
+	msedgedriver!GetHandleVerifier [0x7ff63718a958+2a8c8]
+	msedgedriver!GetHandleVerifier [0x7ff6371931e6+33156]
+	msedgedriver!GetHandleVerifier [0x7ff637175614+15584]
+	msedgedriver!GetHandleVerifier [0x7ff637175735+156a5]
+	msedgedriver!GetHandleVerifier [0x7ff637162a53+29c3]
+	KERNEL32!BaseThreadInitThunk [0x7ffc781a7374+14]
+	ntdll!RtlUserThreadStart [0x7ffc79bfcc91+21]
+
+2026-06-08 09:17:07 - ERROR - climber.py - get_music_download_url - 184 - audio元素查找超时
+2026-06-08 12:37:10 - ERROR - climber.py - get_music_download_url - 149 - get_music_download_url中url获取超时
+2026-06-08 12:54:53 - ERROR - climber.py - get_music_download_url - 129 - audio元素查找超时

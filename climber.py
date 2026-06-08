@@ -2,11 +2,13 @@
 # SPDX-License-Identifier: MIT
 import requests
 from bs4 import BeautifulSoup
+import re
 import os
 import time
 import logging
 import configparser
 from selenium import webdriver
+from selenium.common import TimeoutException
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -99,62 +101,54 @@ def get_music_url_list(name): # 因网站更新已重写 最后更改日期2026-
         url_list.append(inside_list)
     return url_list
 
-def get_music_download_url(url): # 因网站更新已重写 最后更改日期2026-3-6
-    print('get_music_download_url')
-    #  设置无头模式和User-Agent
+def get_music_download_url(url): # 平均用时17.189秒/首 较上个版本提升2.1倍
+    # 浏览器驱动基本配置
     edge_options = Options()
     edge_options.add_argument("--headless")
     edge_options.add_argument(f"user-agent={headers['User-Agent']}")
 
     # 启动浏览器并发送请求
     driver = webdriver.Edge(
-            service=Service(os.path.join(os.path.dirname(os.path.abspath(__file__)),'drivers','msedgedriver.exe')),
-            options=edge_options
-            )
+        service=Service(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'drivers', 'msedgedriver.exe')),
+        options=edge_options
+    )
     driver.get(url)
-    print('get')
 
-    # 等待按钮可点击
     try:
-        WebDriverWait(driver,20).until(EC.element_to_be_clickable((By.ID,'btn-download-mp3')))
-    except TimeoutError:
-        logging.error('get_music_download_url中等待按钮点击超时')
-        print('等待按钮点击超时')
+        # 等待audio元素出现在DOM中
+        audio_element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.TAG_NAME, "audio"))
+        )
+
+        # 等待src属性不为空
+        WebDriverWait(driver, 10).until(
+            lambda d: audio_element.get_attribute("src")
+                      and audio_element.get_attribute("src").strip() != ""
+        )
+    except TimeoutException:
+        logging.error('audio元素查找超时')
         driver.quit()
-        return 'url获取失败'
+        return
+    except Exception as e:
+        logging.error(f'未知的错误:{e}')
 
-    # 点击按钮
-    driver.find_element(By.ID,'btn-download-mp3').click()
-    print('click')
-    time.sleep(3)
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    dom_element = soup.find('audio')
+    driver.quit()
 
-    fail_times = 0
-    while True:
+    if dom_element:
+        src = re.search(r'src="([^"]+)"', str(dom_element))
         try:
-            # 获得HTML并解析
-            page_html = driver.page_source
-            soup = BeautifulSoup(page_html, 'html.parser')
-            # 尝试寻找按钮,找不到会抛出AttributeError异常并进行下一次循环
-            purpose_url = soup.find(class_='download-option-card default-link').get('href')
-            # 运行到此则成功获取URL
-            driver.quit()
-            return purpose_url
+            if src.group(1):
+                return src.group(1)
         except AttributeError:
-            fail_times += 1
-            print(f'fail for {fail_times} times')
-            # 处理超时
-            if fail_times >= 40:
-                logging.error('get_music_download_url中url获取超时')
-                driver.quit()
-                return 'url获取失败'
-            time.sleep(1)
-            continue
-        except Exception as e:
-            logging.error(f'get_music_download_url中发生未知错误: {e},重试次数{fail_times}次')
-            driver.quit()
-            return 'url获取失败'
+            logging.error('audio中src为空')
+            return
 
-def download_music(download_url,file_path): # 网站更新未影响该函数正常工作
+    logging.error('audio元素不存在')
+    return
+
+def download_music(download_url,file_path):
     # 发送 GET 请求下载 MP3 文件
     response = requests.get(download_url, stream=True, verify=verify,headers=headers)
 
